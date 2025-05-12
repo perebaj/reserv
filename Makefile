@@ -1,6 +1,11 @@
 GOLANGCI_LINT_VERSION=v1.62.2
 GOLANG_VULCHECK_VERSION=v1.1.3
 
+## run the api
+PHONY: run
+run:
+	go run cmd/api/main.go
+
 ## run all tests. Usage `make test` or `make test testcase="TestFunctionName"` to run an isolated tests
 .PHONY: test
 test:
