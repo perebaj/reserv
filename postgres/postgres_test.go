@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/postgres"
 	"github.com/stretchr/testify/require"
 )
@@ -86,4 +87,222 @@ func TestPing(t *testing.T) {
 
 	err := db.Ping()
 	require.NoError(t, err)
+}
+
+func TestAmenities(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	amenities, err := repo.Amenities(ctx)
+	require.NoError(t, err)
+	require.NotEmpty(t, amenities)
+	for _, amenity := range amenities {
+		require.NotEmpty(t, amenity.ID)
+		require.NotEmpty(t, amenity.Name)
+		require.NotNil(t, amenity.CreatedAt)
+		require.NotZero(t, amenity.CreatedAt)
+	}
+}
+
+func TestGetPropertyAmenities(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+	ctx := context.Background()
+	repo := postgres.NewRepository(db)
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+
+	amenities := []string{"wifi", "pool"}
+	err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
+	require.NoError(t, err)
+
+	propertyAmenities, err := repo.GetPropertyAmenities(ctx, propertyID)
+	require.NoError(t, err)
+	for _, amenity := range propertyAmenities {
+		require.Contains(t, amenities, amenity.ID)
+		require.NotNil(t, amenity.CreatedAt)
+		// Not zero because we are inserting the created_at on the db layer.
+		require.NotZero(t, amenity.CreatedAt)
+	}
+}
+
+func TestCreatePropertyAmenities(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+
+	amenities := []string{"wifi", "pool"}
+	err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
+	require.NoError(t, err)
+
+	var propertyAmenities []reserv.PropertyAmenity
+	err = db.SelectContext(ctx, &propertyAmenities, "SELECT * FROM property_amenities WHERE property_id = $1", propertyID)
+	require.NoError(t, err)
+
+	for _, amenity := range propertyAmenities {
+		require.Contains(t, amenities, amenity.AmenityID)
+		require.Equal(t, propertyID, amenity.PropertyID)
+		require.NotNil(t, amenity.CreatedAt)
+		// Not zero because we are inserting the created_at on the db layer.
+		require.NotZero(t, amenity.CreatedAt)
+	}
+
+	// Test what happens when we try to insert the same amenity twice.
+	err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
+	require.NoError(t, err)
+}
+
+func TestCreateProperty(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+	require.NotEmpty(t, propertyID)
+
+	var createdProperty reserv.Property
+	err = db.GetContext(ctx, &createdProperty, "SELECT * FROM properties WHERE id = $1", propertyID)
+	require.NoError(t, err)
+	require.Equal(t, property.Title, createdProperty.Title)
+	require.Equal(t, property.Description, createdProperty.Description)
+	require.Equal(t, property.PricePerNightCents, createdProperty.PricePerNightCents)
+	require.Equal(t, property.Currency, createdProperty.Currency)
+	require.Equal(t, property.HostID, createdProperty.HostID)
+	require.NotNil(t, createdProperty.CreatedAt)
+	require.NotNil(t, createdProperty.UpdatedAt)
+}
+
+func TestUpdateProperty(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+	require.NotEmpty(t, propertyID)
+
+	property.Title = "Updated Property"
+	property.PricePerNightCents = 15000
+	property.UpdatedAt = property.UpdatedAt.Add(time.Minute)
+	property.Description = "Updated Description"
+	property.Currency = "BRL"
+
+	err = repo.UpdateProperty(ctx, property, propertyID)
+	require.NoError(t, err)
+
+	var updatedProperty reserv.Property
+	err = db.GetContext(ctx, &updatedProperty, "SELECT * FROM properties WHERE id = $1", propertyID)
+	require.NoError(t, err)
+	require.Equal(t, property.Title, updatedProperty.Title)
+	require.Equal(t, property.Description, updatedProperty.Description)
+	require.Equal(t, property.PricePerNightCents, updatedProperty.PricePerNightCents)
+	require.Equal(t, property.Currency, updatedProperty.Currency)
+	require.Equal(t, property.HostID, updatedProperty.HostID)
+	require.NotNil(t, updatedProperty.CreatedAt)
+	require.NotNil(t, updatedProperty.UpdatedAt)
+}
+
+func TestDeleteProperty(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+	require.NotEmpty(t, propertyID)
+
+	amenities := []string{"wifi", "pool"}
+	err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
+	require.NoError(t, err)
+
+	err = repo.DeleteProperty(ctx, propertyID)
+	require.NoError(t, err)
+
+	var deletedProperty reserv.Property
+	affected, deletedProperty, err := repo.GetProperty(ctx, propertyID)
+	require.NoError(t, err)
+	require.Equal(t, 0, affected)
+	require.Empty(t, deletedProperty)
+
+	gotAmenities, err := repo.GetPropertyAmenities(ctx, propertyID)
+	require.NoError(t, err)
+	require.Len(t, gotAmenities, 0)
 }
