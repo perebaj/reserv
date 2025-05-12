@@ -1,0 +1,22 @@
+name: CI-reserv
+
+on: [push]
+
+
+# This is what will cancel the previous workflow run if a new one is triggered. This is useful to avoid running multiple workflows at the same time when a new commit is pushed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    name: Test and Lint
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: 1.23.8
+        check-latest: true
+    - name: lint and test
+      run: make lint && make test
