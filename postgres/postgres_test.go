@@ -89,6 +89,26 @@ func TestPing(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAmenities(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	amenities, err := repo.Amenities(ctx)
+	require.NoError(t, err)
+	require.NotEmpty(t, amenities)
+	for _, amenity := range amenities {
+		require.NotEmpty(t, amenity.ID)
+		require.NotEmpty(t, amenity.Name)
+		require.NotNil(t, amenity.CreatedAt)
+		require.NotZero(t, amenity.CreatedAt)
+	}
+}
+
 func TestGetPropertyAmenities(t *testing.T) {
 	db := OpenDB(t)
 	defer func() {

@@ -16,6 +16,20 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{db: db}
 }
 
+// Amenities returns all amenities. Obs: As we have a small number of amenities, the pagination is not applied.
+func (r *Repository) Amenities(ctx context.Context) ([]reserv.Amenity, error) {
+	query := `
+		SELECT * FROM amenities
+	`
+
+	var amenities []reserv.Amenity
+	if err := r.db.SelectContext(ctx, &amenities, query); err != nil {
+		return nil, err
+	}
+
+	return amenities, nil
+}
+
 // GetPropertyAmenities returns the amenities for a property.
 func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string) ([]reserv.Amenity, error) {
 	query := `
