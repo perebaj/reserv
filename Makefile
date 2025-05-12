@@ -1,6 +1,8 @@
 GOLANGCI_LINT_VERSION=v1.62.2
 GOLANG_VULCHECK_VERSION=v1.1.3
 
+export POSTGRES_URL=postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+
 ## run all tests. Usage `make test` or `make test testcase="TestFunctionName"` to run an isolated tests
 .PHONY: test
 test:
@@ -27,6 +29,35 @@ lint: nil-checker
 coverage:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
+
+## Start the development server
+.PHONY: docker-start
+docker-start:
+	@echo "Starting the development server..."
+	@docker-compose up -d
+
+## Stop the development server
+.PHONY: docker-stop
+docker-stop:
+	@echo "Stopping the development server..."
+	@docker-compose down
+
+## create a new migration file. Usage `make migration/create name=<migration_name>`
+.PHONY: migration/create
+migration/create:
+	@echo "Creating a new migration..."
+	@go run github.com/golang-migrate/migrate/v4/cmd/migrate create -ext sql -dir postgres/migrations -seq $(name)
+
+## Run integration tests. Usage `make integration-test` or `make integration-test testcase="TestFunctionName"` to run an isolated tests
+.PHONY: integration-test
+integration-test: docker-start
+	@echo "Waiting for the database to be ready..."
+	@echo "Running integration tests..."
+	if [ -n "$(testcase)" ]; then \
+		go test ./... -tags integration -timeout 10s -v -run="^$(testcase)$$" ; \
+	else \
+		go test ./... -tags integration -timeout 10s; \
+	fi
 
 ## Display help for all targets
 .PHONY: help
