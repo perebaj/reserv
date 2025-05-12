@@ -87,7 +87,7 @@ func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID str
 	return tx.Commit()
 }
 
-// CreateProperty creates a new property.
+// CreateProperty ...
 func (r *Repository) CreateProperty(ctx context.Context, property reserv.Property) (string, error) {
 	query := `
 		INSERT INTO properties (
@@ -118,7 +118,7 @@ func (r *Repository) CreateProperty(ctx context.Context, property reserv.Propert
 	return id, nil
 }
 
-// UpdateProperty updates a property.
+// UpdateProperty ...
 func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Property, id string) error {
 	query := `
 		UPDATE properties
@@ -137,7 +137,7 @@ func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Propert
 	return nil
 }
 
-// DeleteProperty deletes a property.
+// DeleteProperty deletes a property and its amenities.
 func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
