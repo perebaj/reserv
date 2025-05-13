@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/postgres"
@@ -116,13 +117,13 @@ func TestGetPropertyAmenities(t *testing.T) {
 	}()
 	ctx := context.Background()
 	repo := postgres.NewRepository(db)
-
+	hostID := uuid.New()
 	property := reserv.Property{
 		Title:              "Test Property",
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		HostID:             hostID,
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -158,7 +159,7 @@ func TestCreatePropertyAmenities(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -174,9 +175,12 @@ func TestCreatePropertyAmenities(t *testing.T) {
 	err = db.SelectContext(ctx, &propertyAmenities, "SELECT * FROM property_amenities WHERE property_id = $1", propertyID)
 	require.NoError(t, err)
 
+	propertyIDUUID, err := uuid.Parse(propertyID)
+	require.NoError(t, err)
+
 	for _, amenity := range propertyAmenities {
 		require.Contains(t, amenities, amenity.AmenityID)
-		require.Equal(t, propertyID, amenity.PropertyID)
+		require.Equal(t, propertyIDUUID, amenity.PropertyID)
 		require.NotNil(t, amenity.CreatedAt)
 		// Not zero because we are inserting the created_at on the db layer.
 		require.NotZero(t, amenity.CreatedAt)
@@ -201,7 +205,7 @@ func TestCreateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -236,7 +240,7 @@ func TestUpdateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -280,7 +284,7 @@ func TestDeleteProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             "123e4567-e89b-12d3-a456-426614174000",
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -305,4 +309,63 @@ func TestDeleteProperty(t *testing.T) {
 	gotAmenities, err := repo.GetPropertyAmenities(ctx, propertyID)
 	require.NoError(t, err)
 	require.Len(t, gotAmenities, 0)
+}
+
+func TestProperties(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	ctx := context.Background()
+	repo := postgres.NewRepository(db)
+
+	properties, err := repo.Properties(ctx)
+	require.NoError(t, err)
+	require.Len(t, properties, 0)
+
+	var propertyIDs []string
+	for i := 0; i < 10; i++ {
+		property := reserv.Property{
+			Title:              fmt.Sprintf("Test Property %d", i),
+			Description:        "Test Description",
+			HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+			CreatedAt:          time.Now(),
+			UpdatedAt:          time.Now(),
+			PricePerNightCents: 10000,
+			Currency:           "USD",
+		}
+		propertyID, err := repo.CreateProperty(ctx, property)
+		require.NoError(t, err)
+		propertyIDs = append(propertyIDs, propertyID)
+	}
+
+	amenities := []string{"wifi", "pool"}
+	for _, propertyID := range propertyIDs {
+		err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
+		require.NoError(t, err)
+	}
+
+	properties, err = repo.Properties(ctx)
+	require.NoError(t, err)
+	require.Len(t, properties, 10)
+
+	for _, property := range properties {
+		require.NotEmpty(t, property.ID)
+		require.NotEmpty(t, property.HostID)
+		require.NotEmpty(t, property.Title)
+		require.NotEmpty(t, property.Description)
+		require.NotEmpty(t, property.Currency)
+		require.NotEmpty(t, property.CreatedAt)
+		require.NotEmpty(t, property.UpdatedAt)
+		require.NotZero(t, property.PricePerNightCents)
+		require.Equal(t, int64(10000), property.PricePerNightCents)
+		require.Equal(t, "USD", property.Currency)
+		require.NotEmpty(t, property.Amenities)
+		require.Len(t, property.Amenities, 2)
+		for _, amenity := range property.Amenities {
+			require.NotEmpty(t, amenity.ID)
+			require.NotEmpty(t, amenity.Name)
+		}
+	}
 }

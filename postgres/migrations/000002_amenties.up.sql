@@ -1,11 +1,14 @@
 CREATE TABLE amenities (
+    -- id is an string identifier for the amenity. Example: "wifi", "pool", "free_parking", "free_breakfast".
+    -- TODO(@perebaj): Revisit this. Maybe we should use a UUID. As Im dumping the data manually, the string makes it easier to read.
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE property_amenities (
-    property_id VARCHAR(255) NOT NULL,
+    property_id UUID NOT NULL,
+    -- amenity_id is the id of the amenity.
     amenity_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (property_id, amenity_id)
