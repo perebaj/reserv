@@ -13,3 +13,6 @@ Warning: `make docker-stop` is required to stop the containers after the tests a
 ## Environment variables
 
 - `POSTGRES_URL`: The URL for the Postgres database.
+- `PORT`: The port of the server.
+- `LOG_LEVEL`: The level of the logs.
+- `LOG_FORMAT`: The format of the logs.
