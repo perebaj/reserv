@@ -205,7 +205,7 @@ func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) 
 				'[]'::json
 			) as amenities
 		FROM properties p
-		LEFT JOIN property_amenities pa ON p.id::uuid = pa.property_id::uuid
+		LEFT JOIN property_amenities pa ON p.id = pa.property_id
 		LEFT JOIN amenities a ON pa.amenity_id = a.id
 		GROUP BY p.id
 	`

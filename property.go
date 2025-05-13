@@ -31,7 +31,7 @@ type Property struct {
 	// Currency is the currency of the property. Example: "USD", "BRL". Required.
 	Currency string `json:"currency" db:"currency"`
 	// Amenities is the list of amenities for the property. Example: ["wifi", "pool"].
-	Amenities []Amenity `json:"amenities" db:"amenities"`
+	Amenities []Amenity `json:"amenities" db:"-"`
 	// CreatedAt is the timestamp when the property was created. Optional.
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	// UpdatedAt is the timestamp when the property was updated. Required.
