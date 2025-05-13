@@ -17,6 +17,12 @@ PHONY: nil-checker
 nil-checker:
 	go run go.uber.org/nilaway/cmd/nilaway -test=false -include-pkgs="github.com/perebaj/reserv" -exclude-errors-in-files=mock_ ./...
 
+## Generate the mocks for the tests
+.PHONY: generate-mocks
+generate-mocks:
+	@echo "Generating mocks..."
+	go generate ./...
+
 ## Run linter
 .PHONY: lint
 lint: nil-checker
