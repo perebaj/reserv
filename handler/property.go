@@ -30,7 +30,7 @@ type PropertyRepository interface {
 	// CreatePropertyAmenities creates amenities for a property
 	CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error
 
-	// CreateImage creates an image for a property	
+	// CreateImage creates an image for a property
 	CreateImage(ctx context.Context, image reserv.PropertyImage) (string, error)
 }
 

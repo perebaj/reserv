@@ -26,27 +26,22 @@ type CreatePropertyImage struct {
 func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 	slog.Info("handlePostImage")
 
-	var createPropertyImage CreatePropertyImage
-	err := json.NewDecoder(r.Body).Decode(&createPropertyImage)
-	if err != nil {
-		slog.Error("failed to decode create property image", "error", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	if createPropertyImage.PropertyID == "" || createPropertyImage.HostID == "" {
-		slog.Error("property_id and host_id are required")
-		NewAPIError("property_id and host_id are required", "property_id and host_id are required", http.StatusBadRequest).Write(w)
-		return
-	}
-
-	err = r.ParseMultipartForm(32 << 20) // 32MB is the maximum size of a file we can upload
+	err := r.ParseMultipartForm(32 << 20) // 32MB is the maximum size of a file we can upload
 	if err != nil {
 		slog.Error("failed to parse multipart form", "error", err.Error())
 		NewAPIError("failed to parse multipart form", "failed to parse multipart form", http.StatusInternalServerError).Write(w)
 		return
 	}
 	mForm := r.MultipartForm
+
+	propertyID := mForm.Value["property_id"][0]
+	hostID := mForm.Value["host_id"][0]
+
+	if propertyID == "" || hostID == "" {
+		slog.Error("property_id and host_id are required")
+		NewAPIError("property_id and host_id are required", "property_id and host_id are required", http.StatusBadRequest).Write(w)
+		return
+	}
 
 	var cloudflareID string
 	var filename string
@@ -96,8 +91,8 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, err = h.repo.CreateImage(r.Context(), reserv.PropertyImage{
-		PropertyID:   uuid.MustParse(createPropertyImage.PropertyID),
-		HostID:       uuid.MustParse(createPropertyImage.HostID),
+		PropertyID:   uuid.MustParse(propertyID),
+		HostID:       uuid.MustParse(hostID),
 		CloudflareID: uuid.MustParse(cloudflareID),
 		Filename:     filename,
 		CreatedAt:    time.Now(),

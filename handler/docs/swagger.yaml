@@ -333,8 +333,8 @@ paths:
     post:
       tags:
         - Images
-      summary: Upload an image
-      description: Uploads an image to Cloudflare Images
+      summary: Upload an image and associate it with a property and a host
+      description: Uploads an image to Cloudflare Images and associates it with a property and a host
       requestBody:
         required: true
         content:
