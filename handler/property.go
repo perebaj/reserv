@@ -29,9 +29,10 @@ type PropertyRepository interface {
 	GetPropertyAmenities(ctx context.Context, propertyID string) ([]reserv.Amenity, error)
 	// CreatePropertyAmenities creates amenities for a property
 	CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error
+
+	// CreateImage creates an image for a property
+	CreateImage(ctx context.Context, image reserv.PropertyImage) (string, error)
 }
-
-
 
 // CreatePropertyRequest represents the request body for creating a property
 type CreatePropertyRequest struct {

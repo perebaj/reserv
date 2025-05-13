@@ -2,18 +2,16 @@ package handler
 
 import (
 	"net/http"
-
-	"github.com/cloudflare/cloudflare-go"
 )
 
 // Handle is responsable to gather all important implementations to inject into the handler.
 // TODO(@perebaj): As we have a small number of handlers, we can keep them here.
 type Handler struct {
 	repo       PropertyRepository
-	CloudFlare *cloudflare.API
+	CloudFlare CloudFlareAPI
 }
 
-func NewHandler(repo PropertyRepository, cloudFlare *cloudflare.API) *Handler {
+func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI) *Handler {
 	return &Handler{repo: repo, CloudFlare: cloudFlare}
 }
 
