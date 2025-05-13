@@ -1,3 +1,4 @@
+// Package handler. property.go contains the handler for the property resource and your sub-resources. Ex: amenities.
 package handler
 
 import (
@@ -17,12 +18,20 @@ type PropertyHandler struct {
 
 //go:generate mockgen -source property.go -destination ../mock/property.go -package mock
 type PropertyRepository interface {
+	// CreateProperty creates a new property
 	CreateProperty(ctx context.Context, property reserv.Property) (string, error)
+	// UpdateProperty updates an existing property
 	UpdateProperty(ctx context.Context, property reserv.Property, id string) error
+	// DeleteProperty deletes a property
 	DeleteProperty(ctx context.Context, id string) error
+	// GetProperty gets a property by id
 	GetProperty(ctx context.Context, id string) (int, reserv.Property, error)
+	// Properties gets all properties with sub-resources. Not contains pagination yet.
+	// TODO: Add pagination
 	Properties(ctx context.Context) ([]reserv.Property, error)
+	// GetPropertyAmenities gets the amenities for a property
 	GetPropertyAmenities(ctx context.Context, propertyID string) ([]reserv.Amenity, error)
+	// CreatePropertyAmenities creates amenities for a property
 	CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error
 }
 

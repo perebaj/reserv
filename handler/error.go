@@ -1,3 +1,4 @@
+// Package handler. error.go contains a custom error type for the handler package. Enabling us to return errors in a structured way.
 package handler
 
 import (
