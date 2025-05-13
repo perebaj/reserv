@@ -236,19 +236,3 @@ func (h *PropertyHandler) RegisterRoutes(mux *http.ServeMux) {
 		}
 	})
 }
-
-// Example curl commands to test the property handler:
-// Create property:
-// curl -X POST http://localhost:8080/properties -H "Content-Type: application/json" -d '{"title": "Test Property", "description": "Test Description", "price_per_night_cents": 10000, "currency": "USD", "host_id": "00000000-0000-0000-0000-000000000000"}'
-//
-// Update property:
-// curl -X PUT "http://localhost:8080/properties?id=00000000-0000-0000-0000-000000000000" -H "Content-Type: application/json" -d '{"title": "Updated Property", "description": "Updated Description", "price_per_night_cents": 15000, "currency": "USD"}'
-//
-// Delete property:
-// curl -X DELETE "http://localhost:8080/properties?id=00000000-0000-0000-0000-000000000000"
-//
-// Get property:
-// curl -X GET "http://localhost:8080/properties?id=00000000-0000-0000-0000-000000000000"
-//
-// Get all properties:
-// curl -X GET http://localhost:8080/properties
