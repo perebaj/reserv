@@ -685,8 +685,8 @@
     {
       "id": "T8ojJ7hvdpWdBlGdmjyrE",
       "type": "rectangle",
-      "x": 2505.583581501963,
-      "y": 1302.3005119655907,
+      "x": 2502.396325642588,
+      "y": 1300.6128898952782,
       "width": 506.39244751286014,
       "height": 447.379027295774,
       "angle": 0,
@@ -704,8 +704,8 @@
         "type": 3
       },
       "seed": 799369248,
-      "version": 146,
-      "versionNonce": 1418299424,
+      "version": 147,
+      "versionNonce": 1769717141,
       "isDeleted": false,
       "boundElements": [
         {
@@ -721,15 +721,15 @@
           "type": "arrow"
         }
       ],
-      "updated": 1747073224191,
+      "updated": 1747155042709,
       "link": null,
       "locked": false
     },
     {
       "id": "pGA-tKk1ckAPTiJkEw5EI",
       "type": "text",
-      "x": 2686.0238238130805,
-      "y": 1503.4900256134777,
+      "x": 2682.8365679537055,
+      "y": 1501.8024035431652,
       "width": 145.511962890625,
       "height": 45,
       "angle": 0,
@@ -745,11 +745,11 @@
       "index": "aH",
       "roundness": null,
       "seed": 413515808,
-      "version": 117,
-      "versionNonce": 22613024,
+      "version": 118,
+      "versionNonce": 1924743925,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1747073192810,
+      "updated": 1747155042709,
       "link": null,
       "locked": false,
       "text": "Backend",
@@ -765,10 +765,10 @@
     {
       "id": "pY5Q0jpZammnmkxCyt0Eg",
       "type": "arrow",
-      "x": 2512.855910262875,
-      "y": 1757.9734317678995,
-      "width": 529.9140616088393,
-      "height": 592.0668226988305,
+      "x": 2511.3164715765424,
+      "y": 1756.7526702251266,
+      "width": 528.5090723827273,
+      "height": 593.2875842416033,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -784,11 +784,11 @@
         "type": 2
       },
       "seed": 1758322144,
-      "version": 138,
-      "versionNonce": 1721927712,
+      "version": 139,
+      "versionNonce": 2027887701,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1747073192811,
+      "updated": 1747155042710,
       "link": null,
       "locked": false,
       "points": [
@@ -797,8 +797,8 @@
           0
         ],
         [
-          -529.9140616088393,
-          592.0668226988305
+          -528.5090723827273,
+          593.2875842416033
         ]
       ],
       "lastCommittedPoint": null,
@@ -2574,10 +2574,10 @@
     {
       "id": "AyS8Exv8jYO1qYG617lPR",
       "type": "arrow",
-      "x": 1511.31451515975,
-      "y": 1568.7471361673722,
-      "width": 954.9217808227959,
-      "height": 49.49312626638266,
+      "x": 1473.9149504153868,
+      "y": 1570.6855372148443,
+      "width": 1018.0211787384658,
+      "height": 54.25175396519376,
       "angle": 0,
       "strokeColor": "#1e1e1e",
       "backgroundColor": "transparent",
@@ -2593,11 +2593,11 @@
         "type": 2
       },
       "seed": 96086496,
-      "version": 42,
-      "versionNonce": 1612712992,
+      "version": 43,
+      "versionNonce": 1673710005,
       "isDeleted": false,
       "boundElements": [],
-      "updated": 1747073224191,
+      "updated": 1747155042710,
       "link": null,
       "locked": false,
       "points": [
@@ -2606,8 +2606,8 @@
           0
         ],
         [
-          954.9217808227959,
-          -49.49312626638266
+          1018.0211787384658,
+          -54.25175396519376
         ]
       ],
       "lastCommittedPoint": null,
@@ -2648,7 +2648,7 @@
       "version": 18,
       "versionNonce": 1798693490,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1747149934593,
       "link": null,
       "locked": false,
@@ -2683,7 +2683,7 @@
       "version": 120,
       "versionNonce": 1675139694,
       "isDeleted": false,
-      "boundElements": null,
+      "boundElements": [],
       "updated": 1747149950663,
       "link": null,
       "locked": false,
@@ -2694,6 +2694,78 @@
         1
       ],
       "crop": null
+    },
+    {
+      "id": "Z-yNeDsTWZcGrluCTHJvw",
+      "type": "rectangle",
+      "x": 3634.1265108166667,
+      "y": 4002.517596063133,
+      "width": 508.9192393300094,
+      "height": 775.4670041956541,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "b0H",
+      "roundness": {
+        "type": 3
+      },
+      "seed": 899059035,
+      "version": 266,
+      "versionNonce": 1405313883,
+      "isDeleted": false,
+      "boundElements": [
+        {
+          "type": "text",
+          "id": "0B28Blv5yISTFocYHEr2F"
+        }
+      ],
+      "updated": 1747155117976,
+      "link": null,
+      "locked": false
+    },
+    {
+      "id": "0B28Blv5yISTFocYHEr2F",
+      "type": "text",
+      "x": 3639.736246448468,
+      "y": 4142.75109816096,
+      "width": 497.69976806640625,
+      "height": 495,
+      "angle": 0,
+      "strokeColor": "#1e1e1e",
+      "backgroundColor": "transparent",
+      "fillStyle": "solid",
+      "strokeWidth": 2,
+      "strokeStyle": "solid",
+      "roughness": 1,
+      "opacity": 100,
+      "groupIds": [],
+      "frameId": null,
+      "index": "b0I",
+      "roundness": null,
+      "seed": 464660987,
+      "version": 485,
+      "versionNonce": 1238646779,
+      "isDeleted": false,
+      "boundElements": [],
+      "updated": 1747155117976,
+      "link": null,
+      "locked": false,
+      "text": "What I would like to show:\n\nStructures logs\nmetrics\napi definition\npackage modularization\nMakefile\nsimple way to run\ntests/lint/integration-tests\nCI integration\nDeploy in production",
+      "fontSize": 36,
+      "fontFamily": 5,
+      "textAlign": "center",
+      "verticalAlign": "middle",
+      "containerId": "Z-yNeDsTWZcGrluCTHJvw",
+      "originalText": "What I would like to show:\n\nStructures logs\nmetrics\napi definition\npackage modularization\nMakefile\nsimple way to run tests/lint/integration-tests\nCI integration\nDeploy in production",
+      "autoResize": true,
+      "lineHeight": 1.25
     }
   ],
   "appState": {
