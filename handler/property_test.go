@@ -39,8 +39,8 @@ func TestCreateProperty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	mux := http.NewServeMux()
-	handler := handler.NewPropertyHandler(repo)
-	handler.RegisterRoutes(mux)
+	propHandler := handler.NewPropertyHandler(repo)
+	propHandler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
 	rBody := resp.Body.String()

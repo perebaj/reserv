@@ -30,6 +30,7 @@ func (e *APIError) Error() string {
 
 // Write writes the error to the response writer
 func (e *APIError) Write(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
 	b, err := json.Marshal(e)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
