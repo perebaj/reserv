@@ -325,7 +325,7 @@ func TestProperties(t *testing.T) {
 	require.Len(t, properties, 0)
 
 	var propertyIDs []string
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 3; i++ {
 		property := reserv.Property{
 			Title:              fmt.Sprintf("Test Property %d", i),
 			Description:        "Test Description",
@@ -346,9 +346,42 @@ func TestProperties(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	image := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyIDs[0]),
+		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
+		Filename:     "test.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	image2 := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyIDs[0]),
+		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		CloudflareID: uuid.MustParse("8cbd89cc-a87d-4cd7-9a86-3453dae882d8"),
+		Filename:     "test2.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	image3 := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyIDs[1]),
+		HostID:       uuid.MustParse("f91ad421-bd89-40b6-8ee7-13889d79228d"),
+		CloudflareID: uuid.MustParse("8cbd89cc-a87d-4cd7-9a86-3453dae882d8"),
+		Filename:     "test2.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	_, err = repo.CreateImage(ctx, image)
+	require.NoError(t, err)
+
+	_, err = repo.CreateImage(ctx, image2)
+	require.NoError(t, err)
+
+	_, err = repo.CreateImage(ctx, image3)
+	require.NoError(t, err)
+
 	properties, err = repo.Properties(ctx)
 	require.NoError(t, err)
-	require.Len(t, properties, 10)
+	require.Len(t, properties, 3)
 
 	for _, property := range properties {
 		require.NotEmpty(t, property.ID)
@@ -367,5 +400,66 @@ func TestProperties(t *testing.T) {
 			require.NotEmpty(t, amenity.ID)
 			require.NotEmpty(t, amenity.Name)
 		}
+
+		if property.ID == uuid.MustParse(propertyIDs[0]) {
+			require.NotEmpty(t, property.Images)
+			require.Len(t, property.Images, 2)
+			for _, image := range property.Images {
+				require.NotEmpty(t, image.ID)
+				require.NotEmpty(t, image.Filename)
+			}
+		} else if property.ID == uuid.MustParse(propertyIDs[1]) {
+			require.NotEmpty(t, property.Images)
+			require.Len(t, property.Images, 1)
+			for _, image := range property.Images {
+				require.NotEmpty(t, image.ID)
+				require.NotEmpty(t, image.Filename)
+			}
+		} else {
+			require.Empty(t, property.Images)
+		}
 	}
+}
+
+func TestCreateImage(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	// create a property
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             uuid.MustParse("123e4567-e83b-12d3-a456-426614174000"),
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+
+	image := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyID),
+		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
+		Filename:     "test.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	imageID, err := repo.CreateImage(ctx, image)
+	require.NoError(t, err)
+	var createdImage reserv.PropertyImage
+	err = db.GetContext(ctx, &createdImage, "SELECT * FROM property_images WHERE id = $1", imageID)
+	require.NoError(t, err)
+	require.Equal(t, image.PropertyID, createdImage.PropertyID)
+	require.Equal(t, image.CloudflareID, createdImage.CloudflareID)
+	require.Equal(t, image.Filename, createdImage.Filename)
+	require.Equal(t, image.HostID, createdImage.HostID)
+	require.NotNil(t, createdImage.CreatedAt)
+	require.NotZero(t, createdImage.CreatedAt)
 }

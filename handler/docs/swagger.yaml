@@ -1,16 +1,49 @@
 openapi: 3.0.0
 info:
   title: Reserv API
-  description: API for managing property listings and images
+  description: Reserv API
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080
-    description: Local development server
+  - url: https://reserv-production.up.railway.app/
+    description: Reserv production server
+
+tags:
+  - name: Properties
+    description: API for managing property listings
+  - name: Images
+    description: API for managing images
 
 components:
   schemas:
-    Property:
+    CreateProperty:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title of the property
+        description:
+          type: string
+          description: Description of the property
+        price_per_night_cents:
+          type: integer
+          description: Price per night in cents
+        currency:
+          type: string
+          description: Currency code (e.g., USD, BRL)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - title
+        - description
+        - price_per_night_cents
+        - currency
+        - updated_at
+    ReturnProperty:
       type: object
       properties:
         id:
@@ -37,6 +70,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Amenity'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyImage'
         created_at:
           type: string
           format: date-time
@@ -68,24 +105,51 @@ components:
         - name
         - created_at
 
-    Image:
+    PropertyImage:
       type: object
       properties:
         id:
           type: string
           description: Cloudflare image ID
+        host_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the host
+        created_at:
+          type: string
+          format: date-time
+        property_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the property
+        cloudflare_id:
+          type: string
+          format: uuid
         filename:
           type: string
-          description: Original filename
-        variants:
-          type: array
-          items:
-            type: string
-          description: Available image variants
+          description: Filename of the image
       required:
         - id
+        - host_id
+        - property_id
+        - cloudflare_id
         - filename
-        - variants
+        - created_at
+
+    ReturnPropertyImage:
+      type: object
+      properties:
+        cloudflare_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the image
+        filename:
+          type: string
+          description: Filename of the image
+      required:
+        - cloudflare_id
+        - filename
+
 
     APIError:
       type: object
@@ -106,6 +170,8 @@ components:
 paths:
   /properties:
     get:
+      tags:
+        - Properties
       summary: List all properties
       description: Returns a list of all properties with their amenities
       responses:
@@ -116,7 +182,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Property'
+                  $ref: '#/components/schemas/ReturnProperty'
         '500':
           description: Internal server error
           content:
@@ -125,6 +191,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     post:
+      tags:
+        - Properties
       summary: Create a new property
       description: Creates a new property listing
       requestBody:
@@ -132,7 +200,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Property'
+              $ref: '#/components/schemas/CreateProperty'
       responses:
         '201':
           description: Property created successfully
@@ -168,6 +236,8 @@ paths:
         description: Property ID
 
     get:
+      tags:
+        - Properties
       summary: Get property by ID
       description: Returns a single property by its ID
       responses:
@@ -176,7 +246,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: '#/components/schemas/ReturnProperty'
         '404':
           description: Property not found
           content:
@@ -191,6 +261,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     put:
+      tags:
+        - Properties
       summary: Update property
       description: Updates an existing property
       requestBody:
@@ -198,7 +270,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Property'
+              $ref: '#/components/schemas/CreateProperty'
       responses:
         '200':
           description: Property updated successfully
@@ -222,6 +294,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     delete:
+      tags:
+        - Properties
       summary: Delete property
       description: Deletes a property and its associated amenities
       responses:
@@ -242,6 +316,8 @@ paths:
 
   /images:
     post:
+      tags:
+        - Images
       summary: Upload an image
       description: Uploads an image to Cloudflare Images
       requestBody:
@@ -261,7 +337,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Image'
+                $ref: '#/components/schemas/ReturnPropertyImage'
         '400':
           description: Invalid input
           content:
