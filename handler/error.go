@@ -35,6 +35,7 @@ func (e *APIError) Write(w http.ResponseWriter) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	w.WriteHeader(e.Status)
 
 	_, _ = w.Write(b)
 }

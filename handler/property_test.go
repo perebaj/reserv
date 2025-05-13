@@ -134,3 +134,22 @@ func TestGetProperty(t *testing.T) {
 	require.Equal(t, int64(10000), response.PricePerNightCents)
 	require.Equal(t, "USD", response.Currency)
 }
+
+func TestGetProperty_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mock.NewMockPropertyRepository(ctrl)
+	repo.EXPECT().GetProperty(gomock.Any(), gomock.Any()).Return(0, reserv.Property{}, nil)
+	propertyID := uuid.New().String()
+	req := httptest.NewRequest(http.MethodGet, "/properties?id="+propertyID, nil)
+	resp := httptest.NewRecorder()
+
+	mux := http.NewServeMux()
+	handler := handler.NewPropertyHandler(repo)
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+
+	rBody := resp.Body.String()
+	require.Equal(t, http.StatusNotFound, resp.Code, rBody)
+}
