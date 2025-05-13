@@ -105,6 +105,21 @@ components:
         - name
         - created_at
 
+    CreatePropertyImage:
+      type: object
+      properties:
+        property_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the property
+        host_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the host
+      required:
+        - property_id
+        - host_id
+
     PropertyImage:
       type: object
       properties:
@@ -330,14 +345,14 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: Image file to upload
+                  description: Upload an image and associate it with a property and a host
       responses:
-        '200':
+        '201':
           description: Image uploaded successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReturnPropertyImage'
+                $ref: '#/components/schemas/CreatePropertyImage'
         '400':
           description: Invalid input
           content:

@@ -5,8 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/cloudflare/cloudflare-go"
+	"github.com/google/uuid"
+	"github.com/perebaj/reserv"
 )
 
 type Image struct {
@@ -15,20 +18,43 @@ type Image struct {
 	Variants []string `json:"variants"`
 }
 
+type CreatePropertyImage struct {
+	PropertyID string `json:"property_id"`
+	HostID     string `json:"host_id"`
+}
+
 func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 	slog.Info("handlePostImage")
-	err := r.ParseMultipartForm(32 << 20) // 32MB is the maximum size of a file we can upload
+
+	var createPropertyImage CreatePropertyImage
+	err := json.NewDecoder(r.Body).Decode(&createPropertyImage)
+	if err != nil {
+		slog.Error("failed to decode create property image", "error", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if createPropertyImage.PropertyID == "" || createPropertyImage.HostID == "" {
+		slog.Error("property_id and host_id are required")
+		NewAPIError("property_id and host_id are required", "property_id and host_id are required", http.StatusBadRequest).Write(w)
+		return
+	}
+
+	err = r.ParseMultipartForm(32 << 20) // 32MB is the maximum size of a file we can upload
 	if err != nil {
 		slog.Error("failed to parse multipart form", "error", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		NewAPIError("failed to parse multipart form", "failed to parse multipart form", http.StatusInternalServerError).Write(w)
 		return
 	}
 	mForm := r.MultipartForm
+
+	var cloudflareID string
+	var filename string
 	for k := range mForm.File {
 		file, fileHeader, err := r.FormFile(k)
 		if err != nil {
 			slog.Error("failed to get image from form", "error", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			NewAPIError("failed to get image from form", "failed to get image from form", http.StatusInternalServerError).Write(w)
 			return
 		}
 		defer file.Close()
@@ -45,13 +71,14 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 		}, cloudflare.UploadImageParams{
 			File: file,
 			Name: fileHeader.Filename,
-			Metadata: map[string]interface{}{
-				"upload": "api",
-			},
 		})
+
+		filename = img.Filename
+		cloudflareID = img.ID
+
 		if err != nil {
 			slog.Error("failed to upload image", "error", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			NewAPIError("failed to upload image", "failed to upload image", http.StatusInternalServerError).Write(w)
 			return
 		}
 		slog.Info("uploaded image", "id", img.ID, "filename", img.Filename)
@@ -62,9 +89,24 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 		})
 		if err != nil {
 			slog.Error("failed to marshal image", "error", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			NewAPIError("failed to marshal image", "failed to marshal image", http.StatusInternalServerError).Write(w)
 			return
 		}
 		_, _ = w.Write(imgByte)
 	}
+
+	_, err = h.repo.CreateImage(r.Context(), reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(createPropertyImage.PropertyID),
+		HostID:       uuid.MustParse(createPropertyImage.HostID),
+		CloudflareID: uuid.MustParse(cloudflareID),
+		Filename:     filename,
+		CreatedAt:    time.Now(),
+	})
+	if err != nil {
+		slog.Error("failed to create image", "error", err.Error())
+		NewAPIError("failed to create image", "failed to create image", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
