@@ -47,4 +47,16 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 			h.handlerPostImage(w, r)
 		}
 	})
+
+	mux.HandleFunc("/properties/{id}/amenities", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			h.PostAmenity(w, r)
+		}
+	})
+
+	mux.HandleFunc("/amenities", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			h.GetAmenities(w, r)
+		}
+	})
 }

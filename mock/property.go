@@ -40,6 +40,21 @@ func (m *MockPropertyRepository) EXPECT() *MockPropertyRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Amenities mocks base method.
+func (m *MockPropertyRepository) Amenities(ctx context.Context) ([]reserv.Amenity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Amenities", ctx)
+	ret0, _ := ret[0].([]reserv.Amenity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Amenities indicates an expected call of Amenities.
+func (mr *MockPropertyRepositoryMockRecorder) Amenities(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Amenities", reflect.TypeOf((*MockPropertyRepository)(nil).Amenities), ctx)
+}
+
 // CreateImage mocks base method.
 func (m *MockPropertyRepository) CreateImage(ctx context.Context, image reserv.PropertyImage) (string, error) {
 	m.ctrl.T.Helper()
