@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/handler"
 	"github.com/perebaj/reserv/postgres"
@@ -24,19 +25,22 @@ type Config struct {
 	LogLevel string
 	// LogFormat is the format of the log. Available values are: json, logfmt, gcp
 	LogFormat string
+	// CloudFlareAPIKey is the API key for the Cloudflare API.
+	CloudFlareAPIKey string
 }
 
 func main() {
 	cfg := Config{
 		// POSTGRES_URL Represents the whole connection string for the database.
 		// TODO(@perebaj): Remove this default value when we have a proper configuration.
-		POSTGRES_URL: getEnvWithDefault("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
-		LogLevel:     getEnvWithDefault("LOG_LEVEL", "debug"),
-		LogFormat:    getEnvWithDefault("LOG_FORMAT", "json"),
+		POSTGRES_URL:     getEnvWithDefault("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
+		LogLevel:         getEnvWithDefault("LOG_LEVEL", "debug"),
+		LogFormat:        getEnvWithDefault("LOG_FORMAT", "json"),
+		CloudFlareAPIKey: getEnvWithDefault("CLOUDFLARE_API_KEY", ""),
 	}
 
-	if cfg.POSTGRES_URL == "" {
-		slog.Error("POSTGRES_URL is not set")
+	if cfg.POSTGRES_URL == "" || cfg.CloudFlareAPIKey == "" {
+		slog.Error("POSTGRES_URL or CLOUDFLARE_API_KEY is not set")
 		os.Exit(1)
 	}
 	logger, err := reserv.NewLoggerSlog(
@@ -67,7 +71,14 @@ func main() {
 	}
 
 	repo := postgres.NewRepository(db)
-	handler := handler.NewPropertyHandler(repo)
+
+	cloudFlareClient, err := cloudflare.NewWithAPIToken(cfg.CloudFlareAPIKey)
+	if err != nil {
+		slog.Error("failed to create cloudflare client", "error", err)
+		os.Exit(1)
+	}
+
+	handler := handler.NewHandler(repo, cloudFlareClient)
 
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)

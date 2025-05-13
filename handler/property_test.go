@@ -39,7 +39,7 @@ func TestCreateProperty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	mux := http.NewServeMux()
-	propHandler := handler.NewPropertyHandler(repo)
+	propHandler := handler.NewHandler(repo, nil)
 	propHandler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -76,7 +76,7 @@ func TestUpdateProperty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	mux := http.NewServeMux()
-	handler := handler.NewPropertyHandler(repo)
+	handler := handler.NewHandler(repo, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -97,7 +97,7 @@ func TestDeleteProperty(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewPropertyHandler(repo)
+	handler := handler.NewHandler(repo, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -118,7 +118,7 @@ func TestGetProperty(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewPropertyHandler(repo)
+	handler := handler.NewHandler(repo, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -146,7 +146,7 @@ func TestGetProperty_NotFound(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewPropertyHandler(repo)
+	handler := handler.NewHandler(repo, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 

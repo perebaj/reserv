@@ -12,10 +12,6 @@ import (
 	"github.com/perebaj/reserv"
 )
 
-type PropertyHandler struct {
-	repo PropertyRepository
-}
-
 //go:generate mockgen -source property.go -destination ../mock/property.go -package mock
 type PropertyRepository interface {
 	// CreateProperty creates a new property
@@ -35,9 +31,7 @@ type PropertyRepository interface {
 	CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error
 }
 
-func NewPropertyHandler(repo PropertyRepository) *PropertyHandler {
-	return &PropertyHandler{repo: repo}
-}
+
 
 // CreatePropertyRequest represents the request body for creating a property
 type CreatePropertyRequest struct {
@@ -50,7 +44,7 @@ type CreatePropertyRequest struct {
 }
 
 // CreateProperty creates a new property
-func (h *PropertyHandler) CreateProperty(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	var req CreatePropertyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		slog.Error("failed to decode request body", "error", err)
@@ -109,7 +103,7 @@ type UpdatePropertyRequest struct {
 }
 
 // UpdateProperty updates an existing property
-func (h *PropertyHandler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		http.Error(w, "Property ID is required", http.StatusBadRequest)
@@ -147,7 +141,7 @@ func (h *PropertyHandler) UpdateProperty(w http.ResponseWriter, r *http.Request)
 }
 
 // DeleteProperty deletes a property
-func (h *PropertyHandler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
@@ -164,7 +158,7 @@ func (h *PropertyHandler) DeleteProperty(w http.ResponseWriter, r *http.Request)
 }
 
 // GetProperty gets a property by id
-func (h *PropertyHandler) GetProperty(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
@@ -192,7 +186,7 @@ func (h *PropertyHandler) GetProperty(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetProperties gets all properties
-func (h *PropertyHandler) GetProperties(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 	properties, err := h.repo.Properties(r.Context())
 	if err != nil {
 		slog.Error("failed to get properties", "error", err)
@@ -207,32 +201,4 @@ func (h *PropertyHandler) GetProperties(w http.ResponseWriter, r *http.Request) 
 		NewAPIError("encode_response_error", "failed to encode response", http.StatusInternalServerError).Write(w)
 		return
 	}
-}
-
-// RegisterRoutes registers all property routes
-func (h *PropertyHandler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/properties", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Has("id") {
-			switch r.Method {
-			case http.MethodGet:
-				h.GetProperty(w, r)
-			case http.MethodPut:
-				h.UpdateProperty(w, r)
-			case http.MethodDelete:
-				h.DeleteProperty(w, r)
-			default:
-				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			}
-			return
-		}
-
-		switch r.Method {
-		case http.MethodGet:
-			h.GetProperties(w, r)
-		case http.MethodPost:
-			h.CreateProperty(w, r)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
 }
