@@ -159,7 +159,7 @@ func TestCreatePropertyAmenities(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.New(),
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -205,7 +205,7 @@ func TestCreateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.New(),
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -240,7 +240,7 @@ func TestUpdateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.New(),
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -284,7 +284,7 @@ func TestDeleteProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.New(),
+		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -329,7 +329,7 @@ func TestProperties(t *testing.T) {
 		property := reserv.Property{
 			Title:              fmt.Sprintf("Test Property %d", i),
 			Description:        "Test Description",
-			HostID:             uuid.New(),
+			HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
 			CreatedAt:          time.Now(),
 			UpdatedAt:          time.Now(),
 			PricePerNightCents: 10000,

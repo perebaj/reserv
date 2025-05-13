@@ -220,7 +220,7 @@ func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) 
 	for i, p := range propertiesWithAmenities {
 		properties[i] = p.Property
 		if err := json.Unmarshal(p.AmenitiesJSON, &properties[i].Amenities); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal amenities: %v", err)
+			return nil, fmt.Errorf("failed to unmarshal amenities: %v, raw JSON: %s", err, string(p.AmenitiesJSON))
 		}
 	}
 
