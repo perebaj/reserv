@@ -105,6 +105,14 @@ components:
         - name
         - created_at
 
+    CreatePropertyAmenity:
+      type: object
+      properties:
+        property_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the property
+
     CreatePropertyImage:
       type: object
       properties:
@@ -239,7 +247,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APIError'
-
+  /properties/{id}/amenities:
+    post:
+      tags:
+        - Properties
+      summary: Relationate an amenity to a property
+      description: Relationate an amenity to a property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amenity_ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Amenity relationated to property successfully
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
   /properties/{id}:
     parameters:
       - name: id
@@ -361,6 +400,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /amenities:
+    get:
+      tags:
+        - Amenities
+      summary: List all amenities
+      description: Returns a list of all amenities
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Amenity'
         '500':
           description: Internal server error
           content:

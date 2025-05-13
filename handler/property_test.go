@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/perebaj/reserv"
@@ -152,4 +153,55 @@ func TestGetProperty_NotFound(t *testing.T) {
 
 	rBody := resp.Body.String()
 	require.Equal(t, http.StatusNotFound, resp.Code, rBody)
+}
+
+func TestGetAmenities(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mock.NewMockPropertyRepository(ctrl)
+	repo.EXPECT().Amenities(gomock.Any()).Return([]reserv.Amenity{
+		{ID: "1", Name: "Amenity 1", CreatedAt: time.Now()},
+		{ID: "2", Name: "Amenity 2", CreatedAt: time.Now()},
+	}, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/amenities", nil)
+	resp := httptest.NewRecorder()
+
+	mux := http.NewServeMux()
+	handler := handler.NewHandler(repo, nil)
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+
+	rBody := resp.Body.String()
+	require.Equal(t, http.StatusOK, resp.Code, rBody)
+
+	var response []reserv.Amenity
+	err := json.Unmarshal([]byte(rBody), &response)
+	require.NoError(t, err)
+	require.Equal(t, 2, len(response))
+	require.Equal(t, "Amenity 1", response[0].Name)
+	require.Equal(t, "Amenity 2", response[1].Name)
+	require.Equal(t, "1", response[0].ID)
+	require.Equal(t, "2", response[1].ID)
+}
+
+func TestCreatePropertyAmenity(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mock.NewMockPropertyRepository(ctrl)
+	repo.EXPECT().CreatePropertyAmenities(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+	propertyID := uuid.New().String()
+	req := httptest.NewRequest(http.MethodPost, "/properties/"+propertyID+"/amenities", bytes.NewBuffer([]byte(`["1", "2"]`)))
+	resp := httptest.NewRecorder()
+
+	mux := http.NewServeMux()
+	handler := handler.NewHandler(repo, nil)
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+
+	rBody := resp.Body.String()
+	require.Equal(t, http.StatusOK, resp.Code, rBody)
 }
