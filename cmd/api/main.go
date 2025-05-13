@@ -28,13 +28,15 @@ type Config struct {
 
 func main() {
 	cfg := Config{
-		POSTGRES_URL: getEnvWithDefault("DB_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
+		// POSTGRES_URL Represents the whole connection string for the database.
+		// TODO(@perebaj): Remove this default value when we have a proper configuration.
+		POSTGRES_URL: getEnvWithDefault("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
 		LogLevel:     getEnvWithDefault("LOG_LEVEL", "debug"),
 		LogFormat:    getEnvWithDefault("LOG_FORMAT", "json"),
 	}
 
 	if cfg.POSTGRES_URL == "" {
-		slog.Error("DB_URL is not set")
+		slog.Error("POSTGRES_URL is not set")
 		os.Exit(1)
 	}
 	logger, err := reserv.NewLoggerSlog(
