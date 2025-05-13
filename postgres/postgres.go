@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/perebaj/reserv"
@@ -34,6 +35,7 @@ func (r *Repository) Amenities(ctx context.Context) ([]reserv.Amenity, error) {
 
 // GetPropertyAmenities returns the amenities for a property.
 func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string) ([]reserv.Amenity, error) {
+	slog.Info("getting property amenities", "propertyID", propertyID)
 	query := `
 		SELECT a.id, a.name, a.created_at
 		FROM amenities a
@@ -66,6 +68,7 @@ func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string
 
 // CreatePropertyAmenities creates the amenities for a property.
 func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error {
+	slog.Info("creating property amenities", "propertyID", propertyID, "amenities", amenities)
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %v", err)
@@ -91,6 +94,7 @@ func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID str
 
 // CreateProperty ...
 func (r *Repository) CreateProperty(ctx context.Context, property reserv.Property) (string, error) {
+	slog.Info("creating property", "property", property)
 	query := `
 		INSERT INTO properties (
 			title,
@@ -122,6 +126,7 @@ func (r *Repository) CreateProperty(ctx context.Context, property reserv.Propert
 
 // UpdateProperty ...
 func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Property, id string) error {
+	slog.Info("updating property", "property", property, "id", id)
 	query := `
 		UPDATE properties
 			SET title = $2,
@@ -141,6 +146,7 @@ func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Propert
 
 // DeleteProperty deletes a property and its amenities.
 func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
+	slog.Info("deleting property", "id", id)
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %v", err)
@@ -170,6 +176,7 @@ func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 
 // GetProperty returns a property by id. It return the number of rows affected and the property.
 func (r *Repository) GetProperty(ctx context.Context, id string) (int, reserv.Property, error) {
+	slog.Info("getting property", "id", id)
 	query := `
 		SELECT * FROM properties WHERE id = $1
 	`
@@ -193,6 +200,7 @@ type propertyWithAmenities struct {
 }
 
 func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) {
+	slog.Info("getting properties")
 	query := `
 		SELECT p.*,
 			COALESCE(
