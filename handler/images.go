@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"encoding/json"
+	"context"
 	"log/slog"
 	"net/http"
 	"os"
@@ -11,6 +11,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/perebaj/reserv"
 )
+
+//go:generate mockgen -source images.go -destination ../mock/images.go -package mock
+type CloudFlareAPI interface {
+	UploadImage(ctx context.Context, container *cloudflare.ResourceContainer, params cloudflare.UploadImageParams) (cloudflare.Image, error)
+}
 
 type Image struct {
 	Id       string   `json:"id"`
@@ -34,12 +39,25 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 	}
 	mForm := r.MultipartForm
 
-	propertyID := mForm.Value["property_id"][0]
-	hostID := mForm.Value["host_id"][0]
+	propertyID, ok := mForm.Value["property_id"]
+	if !ok {
+		slog.Error("property_id is required")
+		NewAPIError("property_id is required", "property_id is required", http.StatusBadRequest).Write(w)
+		return
+	}
+	hostID, ok := mForm.Value["host_id"]
+	if !ok {
+		slog.Error("host_id is required")
+		NewAPIError("host_id is required", "host_id is required", http.StatusBadRequest).Write(w)
+		return
+	}
 
-	if propertyID == "" || hostID == "" {
-		slog.Error("property_id and host_id are required")
-		NewAPIError("property_id and host_id are required", "property_id and host_id are required", http.StatusBadRequest).Write(w)
+	propertyIDStr := propertyID[0]
+	hostIDStr := hostID[0]
+
+	if propertyIDStr == "" || hostIDStr == "" {
+		slog.Error("property_id and host_id are required and must be valid UUIDs")
+		NewAPIError("property_id and host_id are required and must be valid UUIDs", "property_id and host_id are required and must be valid UUIDs", http.StatusBadRequest).Write(w)
 		return
 	}
 
@@ -77,26 +95,16 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		slog.Info("uploaded image", "id", img.ID, "filename", img.Filename)
-		imgByte, err := json.Marshal(Image{
-			Id:       img.ID,
-			FileName: img.Filename,
-			Variants: img.Variants,
-		})
-		if err != nil {
-			slog.Error("failed to marshal image", "error", err.Error())
-			NewAPIError("failed to marshal image", "failed to marshal image", http.StatusInternalServerError).Write(w)
-			return
-		}
-		_, _ = w.Write(imgByte)
 	}
 
-	_, err = h.repo.CreateImage(r.Context(), reserv.PropertyImage{
-		PropertyID:   uuid.MustParse(propertyID),
-		HostID:       uuid.MustParse(hostID),
+	id, err := h.repo.CreateImage(r.Context(), reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyIDStr),
+		HostID:       uuid.MustParse(hostIDStr),
 		CloudflareID: uuid.MustParse(cloudflareID),
 		Filename:     filename,
 		CreatedAt:    time.Now(),
 	})
+	slog.Info("image created on postgres", "id", id)
 	if err != nil {
 		slog.Error("failed to create image", "error", err.Error())
 		NewAPIError("failed to create image", "failed to create image", http.StatusInternalServerError).Write(w)

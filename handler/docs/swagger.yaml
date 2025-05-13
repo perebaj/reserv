@@ -342,6 +342,12 @@ paths:
             schema:
               type: object
               properties:
+                property_id:
+                  type: string
+                  format: uuid
+                host_id:
+                  type: string
+                  format: uuid
                 file:
                   type: string
                   format: binary
@@ -349,10 +355,6 @@ paths:
       responses:
         '201':
           description: Image uploaded successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreatePropertyImage'
         '400':
           description: Invalid input
           content:
