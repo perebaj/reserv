@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/perebaj/reserv"
@@ -24,7 +26,7 @@ func (r *Repository) Amenities(ctx context.Context) ([]reserv.Amenity, error) {
 
 	var amenities []reserv.Amenity
 	if err := r.db.SelectContext(ctx, &amenities, query); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get amenities: %v", err)
 	}
 
 	return amenities, nil
@@ -42,7 +44,7 @@ func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string
 
 	rows, err := r.db.QueryContext(ctx, query, propertyID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get property amenities: %v", err)
 	}
 	defer rows.Close()
 
@@ -50,13 +52,13 @@ func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string
 	for rows.Next() {
 		var amenity reserv.Amenity
 		if err := rows.Scan(&amenity.ID, &amenity.Name, &amenity.CreatedAt); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan property amenities: %v", err)
 		}
 		amenities = append(amenities, amenity)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get property amenities: %v", err)
 	}
 
 	return amenities, nil
@@ -66,7 +68,7 @@ func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string
 func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID string, amenities []string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %v", err)
 	}
 	defer func() {
 		_ = tx.Rollback()
@@ -80,7 +82,7 @@ func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID str
 
 	for _, amenity := range amenities {
 		if _, err := tx.ExecContext(ctx, query, propertyID, amenity); err != nil {
-			return err
+			return fmt.Errorf("failed to create property amenities: %v", err)
 		}
 	}
 
@@ -112,7 +114,7 @@ func (r *Repository) CreateProperty(ctx context.Context, property reserv.Propert
 		property.CreatedAt,
 		property.UpdatedAt,
 	).Scan(&id); err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to create property: %v", err)
 	}
 
 	return id, nil
@@ -131,7 +133,7 @@ func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Propert
 	`
 
 	if _, err := r.db.ExecContext(ctx, query, id, property.Title, property.Description, property.PricePerNightCents, property.Currency, property.UpdatedAt); err != nil {
-		return err
+		return fmt.Errorf("failed to update property: %v", err)
 	}
 
 	return nil
@@ -141,7 +143,7 @@ func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Propert
 func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to begin transaction: %v", err)
 	}
 	defer func() {
 		_ = tx.Rollback()
@@ -152,7 +154,7 @@ func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 	`
 
 	if _, err := tx.ExecContext(ctx, query, id); err != nil {
-		return err
+		return fmt.Errorf("failed to delete property: %v", err)
 	}
 
 	query = `
@@ -160,7 +162,7 @@ func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 	`
 
 	if _, err := tx.ExecContext(ctx, query, id); err != nil {
-		return err
+		return fmt.Errorf("failed to delete property amenities: %v", err)
 	}
 
 	return tx.Commit()
@@ -178,8 +180,49 @@ func (r *Repository) GetProperty(ctx context.Context, id string) (int, reserv.Pr
 		if err == sql.ErrNoRows {
 			return 0, reserv.Property{}, nil
 		}
-		return 0, reserv.Property{}, err
+		return 0, reserv.Property{}, fmt.Errorf("failed to get property: %v", err)
 	}
 
 	return 1, property, nil
+}
+
+// propertyWithAmenities is a helper struct to get the amenities from the database and unmarshal them into the Property struct.
+type propertyWithAmenities struct {
+	reserv.Property
+	AmenitiesJSON []byte `db:"amenities"`
+}
+
+func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) {
+	query := `
+		SELECT p.*,
+			COALESCE(
+				json_agg(
+					json_build_object(
+						'id', a.id,
+						'name', a.name
+					) ORDER BY a.name
+				) FILTER (WHERE a.id IS NOT NULL),
+				'[]'::json
+			) as amenities
+		FROM properties p
+		LEFT JOIN property_amenities pa ON p.id::uuid = pa.property_id::uuid
+		LEFT JOIN amenities a ON pa.amenity_id = a.id
+		GROUP BY p.id
+	`
+
+	var propertiesWithAmenities []propertyWithAmenities
+	if err := r.db.SelectContext(ctx, &propertiesWithAmenities, query); err != nil {
+		return nil, fmt.Errorf("failed to scan properties: %v", err)
+	}
+
+	// Unmarshal the amenities that come as a []byte into a the Amenities slice.
+	properties := make([]reserv.Property, len(propertiesWithAmenities))
+	for i, p := range propertiesWithAmenities {
+		properties[i] = p.Property
+		if err := json.Unmarshal(p.AmenitiesJSON, &properties[i].Amenities); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal amenities: %v", err)
+		}
+	}
+
+	return properties, nil
 }
