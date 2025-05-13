@@ -16,7 +16,34 @@ tags:
 
 components:
   schemas:
-    Property:
+    CreateProperty:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Title of the property
+        description:
+          type: string
+          description: Description of the property
+        price_per_night_cents:
+          type: integer
+          description: Price per night in cents
+        currency:
+          type: string
+          description: Currency code (e.g., USD, BRL)
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+        - title
+        - description
+        - price_per_night_cents
+        - currency
+        - updated_at
+    ReturnProperty:
       type: object
       properties:
         id:
@@ -43,6 +70,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Amenity'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyImage'
         created_at:
           type: string
           format: date-time
@@ -74,24 +105,51 @@ components:
         - name
         - created_at
 
-    Image:
+    PropertyImage:
       type: object
       properties:
         id:
           type: string
           description: Cloudflare image ID
+        host_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the host
+        created_at:
+          type: string
+          format: date-time
+        property_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the property
+        cloudflare_id:
+          type: string
+          format: uuid
         filename:
           type: string
-          description: Original filename
-        variants:
-          type: array
-          items:
-            type: string
-          description: Available image variants
+          description: Filename of the image
       required:
         - id
+        - host_id
+        - property_id
+        - cloudflare_id
         - filename
-        - variants
+        - created_at
+
+    ReturnPropertyImage:
+      type: object
+      properties:
+        cloudflare_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the image
+        filename:
+          type: string
+          description: Filename of the image
+      required:
+        - cloudflare_id
+        - filename
+
 
     APIError:
       type: object
@@ -124,7 +182,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Property'
+                  $ref: '#/components/schemas/ReturnProperty'
         '500':
           description: Internal server error
           content:
@@ -142,7 +200,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Property'
+              $ref: '#/components/schemas/CreateProperty'
       responses:
         '201':
           description: Property created successfully
@@ -188,7 +246,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: '#/components/schemas/ReturnProperty'
         '404':
           description: Property not found
           content:
@@ -212,7 +270,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Property'
+              $ref: '#/components/schemas/CreateProperty'
       responses:
         '200':
           description: Property updated successfully
@@ -279,7 +337,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Image'
+                $ref: '#/components/schemas/ReturnPropertyImage'
         '400':
           description: Invalid input
           content:

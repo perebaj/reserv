@@ -94,7 +94,7 @@ func (r *Repository) CreatePropertyAmenities(ctx context.Context, propertyID str
 
 // CreateProperty ...
 func (r *Repository) CreateProperty(ctx context.Context, property reserv.Property) (string, error) {
-	slog.Info("creating property", "property", property)
+	slog.Info("creating property")
 	query := `
 		INSERT INTO properties (
 			title,
@@ -126,7 +126,7 @@ func (r *Repository) CreateProperty(ctx context.Context, property reserv.Propert
 
 // UpdateProperty ...
 func (r *Repository) UpdateProperty(ctx context.Context, property reserv.Property, id string) error {
-	slog.Info("updating property", "property", property, "id", id)
+	slog.Info("updating property", "property_id", id)
 	query := `
 		UPDATE properties
 			SET title = $2,
@@ -193,44 +193,95 @@ func (r *Repository) GetProperty(ctx context.Context, id string) (int, reserv.Pr
 	return 1, property, nil
 }
 
-// propertyWithAmenities is a helper struct to get the amenities from the database and unmarshal them into the Property struct.
-type propertyWithAmenities struct {
-	reserv.Property
-	AmenitiesJSON []byte `db:"amenities"`
-}
-
 func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) {
 	slog.Info("getting properties")
 	query := `
-		SELECT p.*,
-			COALESCE(
-				json_agg(
-					json_build_object(
-						'id', a.id,
-						'name', a.name
-					) ORDER BY a.name
-				) FILTER (WHERE a.id IS NOT NULL),
-				'[]'::json
-			) as amenities
-		FROM properties p
-		LEFT JOIN property_amenities pa ON p.id = pa.property_id
-		LEFT JOIN amenities a ON pa.amenity_id = a.id
-		GROUP BY p.id
-	`
+		SELECT
+        p.id, p.host_id, p.title, p.description,
+        p.price_per_night_cents, p.currency, p.created_at, p.updated_at,
+        COALESCE(
+            json_agg(
+                DISTINCT jsonb_build_object(
+                    'id', pi.id,
+                    'host_id', pi.host_id,
+                    'property_id', pi.property_id,
+                    'cloudflare_id', pi.cloudflare_id,
+                    'filename', pi.filename
+                )
+            ) FILTER (WHERE pi.id IS NOT NULL), '[]'
+        ) AS images,
+        COALESCE(
+            json_agg(
+                DISTINCT jsonb_build_object(
+                    'id', a.id,
+                    'name', a.name
+                )
+            ) FILTER (WHERE a.id IS NOT NULL), '[]'
+        ) AS amenities
+    FROM
+        properties p
+    LEFT JOIN
+        property_images pi ON p.id = pi.property_id
+    LEFT JOIN
+        property_amenities pa ON p.id = pa.property_id
+    LEFT JOIN
+        amenities a ON pa.amenity_id = a.id
+    GROUP BY
+        p.id
+    ORDER BY
+        p.created_at DESC`
 
-	var propertiesWithAmenities []propertyWithAmenities
-	if err := r.db.SelectContext(ctx, &propertiesWithAmenities, query); err != nil {
+	// PropertyWithJSON is a helper struct the JSON fields that we are aggregating in the query.
+	type PropertyWithJSON struct {
+		reserv.Property
+		ImagesJSON    json.RawMessage `db:"images"`
+		AmenitiesJSON json.RawMessage `db:"amenities"`
+	}
+
+	var propertiesWithJSON []PropertyWithJSON
+	err := r.db.SelectContext(ctx, &propertiesWithJSON, query)
+	if err != nil {
 		return nil, fmt.Errorf("failed to scan properties: %v", err)
 	}
 
-	// Unmarshal the amenities that come as a []byte into a the Amenities slice.
-	properties := make([]reserv.Property, len(propertiesWithAmenities))
-	for i, p := range propertiesWithAmenities {
+	properties := make([]reserv.Property, len(propertiesWithJSON))
+	for i, p := range propertiesWithJSON {
 		properties[i] = p.Property
+		if err := json.Unmarshal(p.ImagesJSON, &properties[i].Images); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal images: %v, raw JSON: %s", err, string(p.ImagesJSON))
+		}
+
 		if err := json.Unmarshal(p.AmenitiesJSON, &properties[i].Amenities); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal amenities: %v, raw JSON: %s", err, string(p.AmenitiesJSON))
 		}
 	}
-
 	return properties, nil
+}
+
+// CreateImage creates an image and associates it with a property.
+func (r *Repository) CreateImage(ctx context.Context, image reserv.PropertyImage) (string, error) {
+	slog.Info("creating image")
+	query := `
+		INSERT INTO property_images (
+			property_id,
+			host_id,
+			cloudflare_id,
+			filename,
+			created_at)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
+	`
+
+	var id string
+	if err := r.db.QueryRowxContext(ctx, query,
+		image.PropertyID,
+		image.HostID,
+		image.CloudflareID,
+		image.Filename,
+		image.CreatedAt,
+	).Scan(&id); err != nil {
+		return "", fmt.Errorf("failed to create image: %v", err)
+	}
+
+	return id, nil
 }

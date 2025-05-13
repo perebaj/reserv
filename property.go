@@ -32,10 +32,26 @@ type Property struct {
 	Currency string `json:"currency" db:"currency"`
 	// Amenities is the list of amenities for the property. Example: ["wifi", "pool"].
 	Amenities []Amenity `json:"amenities" db:"-"`
+	// Images is the list of images for the property.
+	Images []PropertyImage `json:"images" db:"-"`
 	// CreatedAt is the timestamp when the property was created. Optional.
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	// UpdatedAt is the timestamp when the property was updated. Required.
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+type PropertyImage struct {
+	ID uuid.UUID `json:"id" db:"id"`
+	// HostID is the unique identifier for the host of the property. Required.
+	HostID uuid.UUID `json:"host_id" db:"host_id"`
+	// CreatedAt is the timestamp when the property image was created. Required.
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	// PropertyID is the unique identifier for the property. Required.
+	PropertyID uuid.UUID `json:"property_id" db:"property_id"`
+	// CloudflareID is the unique identifier for the image in Cloudflare. Required.
+	CloudflareID uuid.UUID `json:"cloudflare_id" db:"cloudflare_id"`
+	// Filename is the filename of the image. Required.
+	Filename string `json:"filename" db:"filename"`
 }
 
 // PropertyAmenity represents the junction between properties and amenities
