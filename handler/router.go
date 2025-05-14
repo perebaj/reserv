@@ -20,25 +20,25 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/properties", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			if r.URL.Query().Has("id") {
-				h.GetProperty(w, r)
-			} else {
-				h.GetProperties(w, r)
-			}
+			h.GetProperties(w, r)
 		case http.MethodPost:
 			h.CreateProperty(w, r)
+		case http.MethodOptions:
+			// Handle preflight requests
+			w.WriteHeader(http.StatusOK)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/properties/{id}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			h.GetProperty(w, r)
 		case http.MethodPut:
-			if r.URL.Query().Has("id") {
-				h.UpdateProperty(w, r)
-			} else {
-				http.Error(w, "Missing property ID", http.StatusBadRequest)
-			}
+			h.UpdateProperty(w, r)
 		case http.MethodDelete:
-			if r.URL.Query().Has("id") {
-				h.DeleteProperty(w, r)
-			} else {
-				http.Error(w, "Missing property ID", http.StatusBadRequest)
-			}
+			h.DeleteProperty(w, r)
 		case http.MethodOptions:
 			// Handle preflight requests
 			w.WriteHeader(http.StatusOK)
