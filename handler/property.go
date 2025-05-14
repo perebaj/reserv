@@ -192,7 +192,8 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperties gets all properties
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
-	properties, err := h.repo.Properties(r.Context(), reserv.PropertyFilter{})
+	hostID := r.URL.Query().Get("host_id")
+	properties, err := h.repo.Properties(r.Context(), reserv.PropertyFilter{HostID: hostID})
 	if err != nil {
 		slog.Error("failed to get properties", "error", err)
 		NewAPIError("get_properties_error", "failed to get properties", http.StatusInternalServerError).Write(w)

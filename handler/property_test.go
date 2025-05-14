@@ -205,3 +205,30 @@ func TestCreatePropertyAmenity(t *testing.T) {
 	rBody := resp.Body.String()
 	require.Equal(t, http.StatusOK, resp.Code, rBody)
 }
+
+func TestGetProperties_WithHostIDFilter(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mock.NewMockPropertyRepository(ctrl)
+	repo.EXPECT().Properties(gomock.Any(), gomock.Any()).Return([]reserv.Property{
+		{ID: uuid.New(), Title: "Test Property", Description: "Test Description", PricePerNightCents: 10000, Currency: "USD", HostID: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"},
+		{ID: uuid.New(), Title: "Test Property 2", Description: "Test Description 2", PricePerNightCents: 10000, Currency: "USD", HostID: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"},
+	}, nil)
+
+	req := httptest.NewRequest(http.MethodGet, "/properties?host_id=user_2x5CiRO5Mf0wBpWO8w469jEJhRq", nil)
+	resp := httptest.NewRecorder()
+
+	mux := http.NewServeMux()
+	handler := handler.NewHandler(repo, nil)
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+
+	rBody := resp.Body.String()
+	require.Equal(t, http.StatusOK, resp.Code, rBody)
+
+	var response []reserv.Property
+	err := json.Unmarshal([]byte(rBody), &response)
+	require.NoError(t, err)
+	require.Equal(t, 2, len(response))
+}
