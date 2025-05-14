@@ -24,7 +24,7 @@ type PropertyRepository interface {
 	GetProperty(ctx context.Context, id string) (int, reserv.Property, error)
 	// Properties gets all properties with sub-resources. Not contains pagination yet.
 	// TODO: Add pagination
-	Properties(ctx context.Context) ([]reserv.Property, error)
+	Properties(ctx context.Context, filter reserv.PropertyFilter) ([]reserv.Property, error)
 	// GetPropertyAmenities gets the amenities for a property
 	GetPropertyAmenities(ctx context.Context, propertyID string) ([]reserv.Amenity, error)
 	// CreatePropertyAmenities creates amenities for a property
@@ -192,7 +192,7 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperties gets all properties
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
-	properties, err := h.repo.Properties(r.Context())
+	properties, err := h.repo.Properties(r.Context(), reserv.PropertyFilter{})
 	if err != nil {
 		slog.Error("failed to get properties", "error", err)
 		NewAPIError("get_properties_error", "failed to get properties", http.StatusInternalServerError).Write(w)

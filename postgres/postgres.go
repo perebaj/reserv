@@ -201,45 +201,51 @@ func (r *Repository) GetProperty(ctx context.Context, id string) (int, reserv.Pr
 	return 1, property, nil
 }
 
-func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) {
+func (r *Repository) Properties(ctx context.Context, filter reserv.PropertyFilter) ([]reserv.Property, error) {
 	slog.Info("getting properties")
-	query := `
-		SELECT
-        p.id, p.host_id, p.title, p.description,
-        p.price_per_night_cents, p.currency, p.created_at, p.updated_at,
-        COALESCE(
-            json_agg(
-                DISTINCT jsonb_build_object(
-                    'id', pi.id,
-                    'host_id', pi.host_id,
-                    'property_id', pi.property_id,
-                    'cloudflare_id', pi.cloudflare_id,
-                    'filename', pi.filename
-                )
-            ) FILTER (WHERE pi.id IS NOT NULL), '[]'
-        ) AS images,
-        COALESCE(
-            json_agg(
-                DISTINCT jsonb_build_object(
-                    'id', a.id,
-                    'name', a.name
-                )
-            ) FILTER (WHERE a.id IS NOT NULL), '[]'
-        ) AS amenities
-    FROM
-        properties p
-    LEFT JOIN
-        property_images pi ON p.id = pi.property_id
-    LEFT JOIN
-        property_amenities pa ON p.id = pa.property_id
-    LEFT JOIN
-        amenities a ON pa.amenity_id = a.id
-    GROUP BY
-        p.id
-    ORDER BY
-        p.created_at DESC`
 
-	// PropertyWithJSON is a helper struct the JSON fields that we are aggregating in the query.
+	baseQuery := `
+		SELECT
+			p.id, p.host_id, p.title, p.description,
+			p.price_per_night_cents, p.currency, p.created_at, p.updated_at,
+			COALESCE(
+				json_agg(
+					DISTINCT jsonb_build_object(
+						'id', pi.id,
+						'host_id', pi.host_id,
+						'property_id', pi.property_id,
+						'cloudflare_id', pi.cloudflare_id,
+						'filename', pi.filename
+					)
+				) FILTER (WHERE pi.id IS NOT NULL), '[]'
+			) AS images,
+			COALESCE(
+				json_agg(
+					DISTINCT jsonb_build_object(
+						'id', a.id,
+						'name', a.name
+					)
+				) FILTER (WHERE a.id IS NOT NULL), '[]'
+			) AS amenities
+		FROM
+			properties p
+		LEFT JOIN
+			property_images pi ON p.id = pi.property_id
+		LEFT JOIN
+			property_amenities pa ON p.id = pa.property_id
+		LEFT JOIN
+			amenities a ON pa.amenity_id = a.id`
+
+	var query string
+	var args []interface{}
+
+	if filter.HostID != "" {
+		query = baseQuery + ` WHERE p.host_id = $1 GROUP BY p.id ORDER BY p.created_at DESC`
+		args = append(args, filter.HostID)
+	} else {
+		query = baseQuery + ` GROUP BY p.id ORDER BY p.created_at DESC`
+	}
+
 	type PropertyWithJSON struct {
 		reserv.Property
 		ImagesJSON    json.RawMessage `db:"images"`
@@ -247,7 +253,14 @@ func (r *Repository) Properties(ctx context.Context) ([]reserv.Property, error) 
 	}
 
 	var propertiesWithJSON []PropertyWithJSON
-	err := r.db.SelectContext(ctx, &propertiesWithJSON, query)
+	var err error
+
+	if len(args) > 0 {
+		err = r.db.SelectContext(ctx, &propertiesWithJSON, query, args...)
+	} else {
+		err = r.db.SelectContext(ctx, &propertiesWithJSON, query)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan properties: %v", err)
 	}
