@@ -22,13 +22,13 @@ func TestCreateProperty(t *testing.T) {
 
 	repo := mock.NewMockPropertyRepository(ctrl)
 
-	uid := uuid.New().String()
+	uid := "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"
 	payload := handler.CreatePropertyRequest{
 		Title:              "Test Property",
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse(uid),
+		HostID:             uid,
 	}
 	repo.EXPECT().CreateProperty(gomock.Any(), gomock.Any()).Return(uid, nil)
 

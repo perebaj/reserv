@@ -117,7 +117,7 @@ func TestGetPropertyAmenities(t *testing.T) {
 	}()
 	ctx := context.Background()
 	repo := postgres.NewRepository(db)
-	hostID := uuid.New()
+	hostID := "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"
 	property := reserv.Property{
 		Title:              "Test Property",
 		Description:        "Test Description",
@@ -159,7 +159,7 @@ func TestCreatePropertyAmenities(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -205,7 +205,7 @@ func TestCreateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -240,7 +240,7 @@ func TestUpdateProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -284,7 +284,7 @@ func TestDeleteProperty(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -299,7 +299,7 @@ func TestDeleteProperty(t *testing.T) {
 
 	image := reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyID),
-		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		HostID:       "2c02e000-42f6-4587-8244-a290421b9c4f",
 		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
 		Filename:     "test.jpg",
 		CreatedAt:    time.Now(),
@@ -340,7 +340,7 @@ func TestProperties(t *testing.T) {
 		property := reserv.Property{
 			Title:              fmt.Sprintf("Test Property %d", i),
 			Description:        "Test Description",
-			HostID:             uuid.MustParse("123e4567-e89b-12d3-a456-426614174000"),
+			HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 			CreatedAt:          time.Now(),
 			UpdatedAt:          time.Now(),
 			PricePerNightCents: 10000,
@@ -359,7 +359,7 @@ func TestProperties(t *testing.T) {
 
 	image := reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyIDs[0]),
-		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
 		Filename:     "test.jpg",
 		CreatedAt:    time.Now(),
@@ -367,7 +367,7 @@ func TestProperties(t *testing.T) {
 
 	image2 := reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyIDs[0]),
-		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CloudflareID: uuid.MustParse("8cbd89cc-a87d-4cd7-9a86-3453dae882d8"),
 		Filename:     "test2.jpg",
 		CreatedAt:    time.Now(),
@@ -375,7 +375,7 @@ func TestProperties(t *testing.T) {
 
 	image3 := reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyIDs[1]),
-		HostID:       uuid.MustParse("f91ad421-bd89-40b6-8ee7-13889d79228d"),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CloudflareID: uuid.MustParse("8cbd89cc-a87d-4cd7-9a86-3453dae882d8"),
 		Filename:     "test2.jpg",
 		CreatedAt:    time.Now(),
@@ -447,7 +447,7 @@ func TestCreateImage(t *testing.T) {
 		Description:        "Test Description",
 		PricePerNightCents: 10000,
 		Currency:           "USD",
-		HostID:             uuid.MustParse("123e4567-e83b-12d3-a456-426614174000"),
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CreatedAt:          time.Now(),
 		UpdatedAt:          time.Now(),
 	}
@@ -456,7 +456,7 @@ func TestCreateImage(t *testing.T) {
 
 	image := reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyID),
-		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
 		Filename:     "test.jpg",
 		CreatedAt:    time.Now(),
