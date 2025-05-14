@@ -35,7 +35,6 @@ components:
           example: USD
         host_id:
           type: string
-          format: uuid
           description: Unique identifier for the host
         created_at:
           type: string
@@ -60,7 +59,6 @@ components:
           description: Unique identifier for the property
         host_id:
           type: string
-          format: uuid
           description: Unique identifier for the host
         title:
           type: string
@@ -130,7 +128,6 @@ components:
           description: Unique identifier for the property
         host_id:
           type: string
-          format: uuid
           description: Unique identifier for the host
       required:
         - property_id
@@ -144,7 +141,6 @@ components:
           description: Cloudflare image ID
         host_id:
           type: string
-          format: uuid
           description: Unique identifier for the host
         created_at:
           type: string

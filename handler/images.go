@@ -99,7 +99,7 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.repo.CreateImage(r.Context(), reserv.PropertyImage{
 		PropertyID:   uuid.MustParse(propertyIDStr),
-		HostID:       uuid.MustParse(hostIDStr),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
 		CloudflareID: uuid.MustParse(cloudflareID),
 		Filename:     filename,
 		CreatedAt:    time.Now(),

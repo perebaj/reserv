@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/perebaj/reserv"
 )
 
@@ -41,12 +40,12 @@ type PropertyRepository interface {
 
 // CreatePropertyRequest represents the request body for creating a property
 type CreatePropertyRequest struct {
-	Title              string    `json:"title"`
-	Description        string    `json:"description"`
-	PricePerNightCents int64     `json:"price_per_night_cents"`
-	Currency           string    `json:"currency"`
-	HostID             uuid.UUID `json:"host_id"`
-	Amenities          []string  `json:"amenities"`
+	Title              string   `json:"title"`
+	Description        string   `json:"description"`
+	PricePerNightCents int64    `json:"price_per_night_cents"`
+	Currency           string   `json:"currency"`
+	HostID             string   `json:"host_id"`
+	Amenities          []string `json:"amenities"`
 }
 
 // CreateProperty creates a new property
@@ -58,7 +57,7 @@ func (h *Handler) CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Title == "" || req.Description == "" || req.PricePerNightCents == 0 || req.Currency == "" || req.HostID == uuid.Nil {
+	if req.Title == "" || req.Description == "" || req.PricePerNightCents == 0 || req.Currency == "" || req.HostID == "" {
 		slog.Error("missing required fields", "request", req)
 		NewAPIError("missing_required_fields", "missing required fields", http.StatusBadRequest).Write(w)
 		return
