@@ -101,13 +101,11 @@ func main() {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept")
-			w.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
+			w.Header().Set("Access-Control-Allow-Headers", "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version")
 
 			next.ServeHTTP(w, r)
 		})
-	}
-
+	})
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", intPort),
 		Handler: cors(mux),
