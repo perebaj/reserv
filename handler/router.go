@@ -18,25 +18,30 @@ func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI) *Handler {
 // RegisterRoutes registers all property routes
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/properties", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Has("id") {
-			switch r.Method {
-			case http.MethodGet:
-				h.GetProperty(w, r)
-			case http.MethodPut:
-				h.UpdateProperty(w, r)
-			case http.MethodDelete:
-				h.DeleteProperty(w, r)
-			default:
-				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			}
-			return
-		}
-
 		switch r.Method {
 		case http.MethodGet:
-			h.GetProperties(w, r)
+			if r.URL.Query().Has("id") {
+				h.GetProperty(w, r)
+			} else {
+				h.GetProperties(w, r)
+			}
 		case http.MethodPost:
 			h.CreateProperty(w, r)
+		case http.MethodPut:
+			if r.URL.Query().Has("id") {
+				h.UpdateProperty(w, r)
+			} else {
+				http.Error(w, "Missing property ID", http.StatusBadRequest)
+			}
+		case http.MethodDelete:
+			if r.URL.Query().Has("id") {
+				h.DeleteProperty(w, r)
+			} else {
+				http.Error(w, "Missing property ID", http.StatusBadRequest)
+			}
+		case http.MethodOptions:
+			// Handle preflight requests
+			w.WriteHeader(http.StatusOK)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
