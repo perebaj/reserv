@@ -105,7 +105,7 @@ func main() {
 
 			next.ServeHTTP(w, r)
 		})
-	})
+	}
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", intPort),
 		Handler: cors(mux),
