@@ -297,6 +297,17 @@ func TestDeleteProperty(t *testing.T) {
 	err = repo.CreatePropertyAmenities(ctx, propertyID, amenities)
 	require.NoError(t, err)
 
+	image := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyID),
+		HostID:       uuid.MustParse("2c02e000-42f6-4587-8244-a290421b9c4f"),
+		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
+		Filename:     "test.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	_, err = repo.CreateImage(ctx, image)
+	require.NoError(t, err)
+
 	err = repo.DeleteProperty(ctx, propertyID)
 	require.NoError(t, err)
 

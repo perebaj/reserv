@@ -273,12 +273,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                amenity_ids:
-                  type: array
-                  items:
-                    type: string
+              type: array
+              items:
+                type: string
+                example: "wifi"
       responses:
         '200':
           description: Amenity relationated to property successfully

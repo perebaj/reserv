@@ -156,6 +156,14 @@ func (r *Repository) DeleteProperty(ctx context.Context, id string) error {
 	}()
 
 	query := `
+		DELETE FROM property_images WHERE property_id = $1
+	`
+
+	if _, err := tx.ExecContext(ctx, query, id); err != nil {
+		return fmt.Errorf("failed to delete property images: %v", err)
+	}
+
+	query = `
 		DELETE FROM properties WHERE id = $1
 	`
 
