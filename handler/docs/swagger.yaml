@@ -28,9 +28,15 @@ components:
         price_per_night_cents:
           type: integer
           description: Price per night in cents
+          example: 10000
         currency:
           type: string
           description: Currency code (e.g., USD, BRL)
+          example: USD
+        host_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the host
         created_at:
           type: string
           format: date-time
@@ -42,7 +48,9 @@ components:
         - description
         - price_per_night_cents
         - currency
+        - host_id
         - updated_at
+        - created_at
     ReturnProperty:
       type: object
       properties:
