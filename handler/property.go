@@ -110,9 +110,9 @@ type UpdatePropertyRequest struct {
 
 // UpdateProperty updates an existing property
 func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "Property ID is required", http.StatusBadRequest)
+	propertyID := r.PathValue("id")
+	if propertyID == "" {
+		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
 
@@ -137,7 +137,7 @@ func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt:          time.Now(),
 	}
 
-	if err := h.repo.UpdateProperty(r.Context(), property, id); err != nil {
+	if err := h.repo.UpdateProperty(r.Context(), property, propertyID); err != nil {
 		slog.Error("failed to update property", "error", err)
 		NewAPIError("update_property_error", "failed to update property", http.StatusInternalServerError).Write(w)
 		return
@@ -148,13 +148,13 @@ func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 
 // DeleteProperty deletes a property
 func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
+	propertyID := r.PathValue("id")
+	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
 
-	if err := h.repo.DeleteProperty(r.Context(), id); err != nil {
+	if err := h.repo.DeleteProperty(r.Context(), propertyID); err != nil {
 		slog.Error("failed to delete property", "error", err)
 		NewAPIError("delete_property_error", "failed to delete property", http.StatusInternalServerError).Write(w)
 		return
@@ -165,13 +165,13 @@ func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperty gets a property by id
 func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
+	propertyID := r.PathValue("id")
+	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
 
-	affected, property, err := h.repo.GetProperty(r.Context(), id)
+	affected, property, err := h.repo.GetProperty(r.Context(), propertyID)
 	if err != nil {
 		slog.Error("failed to get property", "error", err)
 		NewAPIError("get_property_error", "failed to get property", http.StatusInternalServerError).Write(w)

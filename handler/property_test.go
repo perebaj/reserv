@@ -72,7 +72,7 @@ func TestUpdateProperty(t *testing.T) {
 	jsonBody, err := json.Marshal(payload)
 	require.NoError(t, err)
 
-	req := httptest.NewRequest(http.MethodPut, "/properties?id="+propertyID, bytes.NewBuffer(jsonBody))
+	req := httptest.NewRequest(http.MethodPut, "/properties/"+propertyID, bytes.NewBuffer(jsonBody))
 	resp := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "application/json")
 
@@ -94,7 +94,7 @@ func TestDeleteProperty(t *testing.T) {
 	propertyID := uuid.New().String()
 	repo.EXPECT().DeleteProperty(gomock.Any(), gomock.Any()).Return(nil)
 
-	req := httptest.NewRequest(http.MethodDelete, "/properties?id="+propertyID, nil)
+	req := httptest.NewRequest(http.MethodDelete, "/properties/"+propertyID, nil)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -115,7 +115,7 @@ func TestGetProperty(t *testing.T) {
 	propertyID := uuid.New()
 	repo.EXPECT().GetProperty(gomock.Any(), gomock.Any()).Return(1, reserv.Property{ID: propertyID, Title: "Test Property", Description: "Test Description", PricePerNightCents: 10000, Currency: "USD"}, nil)
 
-	req := httptest.NewRequest(http.MethodGet, "/properties?id="+propertyID.String(), nil)
+	req := httptest.NewRequest(http.MethodGet, "/properties/"+propertyID.String(), nil)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -143,7 +143,7 @@ func TestGetProperty_NotFound(t *testing.T) {
 	repo := mock.NewMockPropertyRepository(ctrl)
 	repo.EXPECT().GetProperty(gomock.Any(), gomock.Any()).Return(0, reserv.Property{}, nil)
 	propertyID := uuid.New().String()
-	req := httptest.NewRequest(http.MethodGet, "/properties?id="+propertyID, nil)
+	req := httptest.NewRequest(http.MethodGet, "/properties/"+propertyID, nil)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
