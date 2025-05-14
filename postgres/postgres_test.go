@@ -331,7 +331,7 @@ func TestProperties(t *testing.T) {
 	ctx := context.Background()
 	repo := postgres.NewRepository(db)
 
-	properties, err := repo.Properties(ctx)
+	properties, err := repo.Properties(ctx, reserv.PropertyFilter{})
 	require.NoError(t, err)
 	require.Len(t, properties, 0)
 
@@ -390,7 +390,7 @@ func TestProperties(t *testing.T) {
 	_, err = repo.CreateImage(ctx, image3)
 	require.NoError(t, err)
 
-	properties, err = repo.Properties(ctx)
+	properties, err = repo.Properties(ctx, reserv.PropertyFilter{})
 	require.NoError(t, err)
 	require.Len(t, properties, 3)
 
@@ -430,6 +430,52 @@ func TestProperties(t *testing.T) {
 			require.Empty(t, property.Images)
 		}
 	}
+}
+
+func TestPropertiesWithHostIDFilter(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	properties, err := repo.Properties(ctx, reserv.PropertyFilter{HostID: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"})
+	require.NoError(t, err)
+	require.Len(t, properties, 0)
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+	require.NotEmpty(t, propertyID)
+
+	properties, err = repo.Properties(ctx, reserv.PropertyFilter{HostID: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"})
+	require.NoError(t, err)
+	require.Len(t, properties, 1)
+
+	property2 := reserv.Property{
+		Title:              "Test Property 2",
+		Description:        "Test Description 2",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+	}
+
+	propertyID2, err := repo.CreateProperty(ctx, property2)
+	require.NoError(t, err)
+	require.NotEmpty(t, propertyID2)
+
+	properties, err = repo.Properties(ctx, reserv.PropertyFilter{HostID: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq"})
+	require.NoError(t, err)
+	require.Len(t, properties, 2)
 }
 
 func TestCreateImage(t *testing.T) {

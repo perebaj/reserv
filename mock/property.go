@@ -145,18 +145,18 @@ func (mr *MockPropertyRepositoryMockRecorder) GetPropertyAmenities(ctx, property
 }
 
 // Properties mocks base method.
-func (m *MockPropertyRepository) Properties(ctx context.Context) ([]reserv.Property, error) {
+func (m *MockPropertyRepository) Properties(ctx context.Context, filter reserv.PropertyFilter) ([]reserv.Property, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Properties", ctx)
+	ret := m.ctrl.Call(m, "Properties", ctx, filter)
 	ret0, _ := ret[0].([]reserv.Property)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Properties indicates an expected call of Properties.
-func (mr *MockPropertyRepositoryMockRecorder) Properties(ctx any) *gomock.Call {
+func (mr *MockPropertyRepositoryMockRecorder) Properties(ctx, filter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Properties", reflect.TypeOf((*MockPropertyRepository)(nil).Properties), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Properties", reflect.TypeOf((*MockPropertyRepository)(nil).Properties), ctx, filter)
 }
 
 // UpdateProperty mocks base method.

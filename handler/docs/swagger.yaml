@@ -201,6 +201,13 @@ paths:
         - Properties
       summary: List all properties
       description: Returns a list of all properties with their amenities
+      parameters:
+        - name: host_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter properties by host ID
       responses:
         '200':
           description: Successful operation
