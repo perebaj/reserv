@@ -24,8 +24,8 @@ func TestCreateBookingHandler(t *testing.T) {
 	requestBody := CreateBooking{
 		PropertyID:   "123",
 		GuestID:      "456",
-		CheckInDate:  "2024-01-01T00:00:00Z",
-		CheckOutDate: "2024-01-02T00:00:00Z",
+		CheckInDate:  "2024-01-01",
+		CheckOutDate: "2024-01-02",
 	}
 
 	jsonBody, err := json.Marshal(requestBody)

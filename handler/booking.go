@@ -28,6 +28,8 @@ type CreateBooking struct {
 	CheckOutDate string `json:"check_out_date"`
 }
 
+const dateFormat = "2006-01-02" // This is Go's way of specifying YYYY-MM-DD
+
 // CreateBookingHandler is the handler for creating a booking.
 func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 	var req CreateBooking
@@ -42,24 +44,23 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	checkInDate, err := time.Parse(time.RFC3339, req.CheckInDate)
+	checkInDate, err := time.Parse(dateFormat, req.CheckInDate)
 	if err != nil {
-		slog.Error("invalid date format", "error", err)
-		NewAPIError("invalid_date_format", "invalid date format", http.StatusBadRequest).Write(w)
+		slog.Error("invalid date format", "error", err, "date", req.CheckInDate)
+		NewAPIError("invalid_date_format", "invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest).Write(w)
 		return
 	}
 
-	checkOutDate, err := time.Parse(time.RFC3339, req.CheckOutDate)
+	checkOutDate, err := time.Parse(dateFormat, req.CheckOutDate)
 	if err != nil {
-		slog.Error("invalid date format", "error", err)
-		NewAPIError("invalid_date_format", "invalid date format", http.StatusBadRequest).Write(w)
+		slog.Error("invalid date format", "error", err, "date", req.CheckOutDate)
+		NewAPIError("invalid_date_format", "invalid date format. Expected YYYY-MM-DD", http.StatusBadRequest).Write(w)
 		return
 	}
 
 	booking := reserv.Booking{
 		PropertyID: req.PropertyID,
 		GuestID:    req.GuestID,
-		// convert data to time.Date(2024, 3, 14, 0, 0, 0, 0, time.UTC)
 		CheckInDate:  time.Date(checkInDate.Year(), checkInDate.Month(), checkInDate.Day(), 0, 0, 0, 0, time.UTC),
 		CheckOutDate: time.Date(checkOutDate.Year(), checkOutDate.Month(), checkOutDate.Day(), 0, 0, 0, 0, time.UTC),
 		// TODO(@perebaj): Add total price. and currency.
