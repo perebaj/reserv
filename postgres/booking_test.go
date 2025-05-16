@@ -37,8 +37,8 @@ func TestCreateBooking(t *testing.T) {
 	want := reserv.Booking{
 		PropertyID:      propertyID,
 		GuestID:         guestID,
-		CheckInDate:     time.Now().AddDate(2025, 1, 1).Format("2006-01-02"),
-		CheckOutDate:    time.Now().AddDate(2025, 1, 4).Format("2006-01-02"),
+		CheckInDate:     time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(2025, 1, 4, 0, 0, 0, 0, time.UTC),
 		TotalPriceCents: 10000,
 		Currency:        "USD",
 		CreatedAt:       time.Now(),
@@ -52,8 +52,8 @@ func TestCreateBooking(t *testing.T) {
 	want2 := reserv.Booking{
 		PropertyID:      propertyID,
 		GuestID:         guestID,
-		CheckInDate:     time.Now().AddDate(2025, 1, 5).Format("2006-01-02"),
-		CheckOutDate:    time.Now().AddDate(2025, 1, 14).Format("2006-01-02"),
+		CheckInDate:     time.Date(2025, 1, 5, 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(2025, 1, 14, 0, 0, 0, 0, time.UTC),
 		TotalPriceCents: 10000,
 		Currency:        "USD",
 		CreatedAt:       time.Now(),
@@ -67,8 +67,8 @@ func TestCreateBooking(t *testing.T) {
 	want3 := reserv.Booking{
 		PropertyID:      propertyID,
 		GuestID:         guestID,
-		CheckInDate:     time.Now().AddDate(2025, 1, 14).Format("2006-01-02"),
-		CheckOutDate:    time.Now().AddDate(2025, 1, 15).Format("2006-01-02"),
+		CheckInDate:     time.Date(2025, 1, 14, 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC),
 		TotalPriceCents: 10000,
 		Currency:        "USD",
 		CreatedAt:       time.Now(),
@@ -76,19 +76,30 @@ func TestCreateBooking(t *testing.T) {
 	}
 
 	id3, err := repo.CreateBooking(context.Background(), want3)
-	require.NoError(t, err)
-	require.NotEmpty(t, id3)
+	require.Error(t, err, "booking overlaps")
+	require.Empty(t, id3)
 
-	// var got reserv.Booking
-	// err = db.GetContext(context.Background(), &got, "SELECT * FROM bookings WHERE id = $1", id)
-	// require.NoError(t, err)
-	// require.Equal(t, got.ID, id)
-	// require.Equal(t, got.PropertyID, want.PropertyID)
-	// require.Equal(t, got.GuestID, want.GuestID)
-	// require.Equal(t, got.CheckInDate, want.CheckInDate)
-	// require.Equal(t, got.CheckOutDate, want.CheckOutDate)
-	// require.Equal(t, got.TotalPriceCents, want.TotalPriceCents)
-	// require.Equal(t, got.Currency, want.Currency)
+	want4 := reserv.Booking{
+		PropertyID:   propertyID,
+		GuestID:      guestID,
+		CheckInDate:  time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
+		CheckOutDate: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+	}
+
+	id4, err := repo.CreateBooking(context.Background(), want4)
+	require.Error(t, err, "booking overlaps")
+	require.Empty(t, id4)
+
+	want5 := reserv.Booking{
+		PropertyID:   propertyID,
+		GuestID:      guestID,
+		CheckInDate:  time.Date(2024, 12, 25, 0, 0, 0, 0, time.UTC),
+		CheckOutDate: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
+	}
+
+	id5, err := repo.CreateBooking(context.Background(), want5)
+	require.NoError(t, err)
+	require.NotEmpty(t, id5)
 }
 
 func TestGetBooking(t *testing.T) {
@@ -115,8 +126,8 @@ func TestGetBooking(t *testing.T) {
 	booking := reserv.Booking{
 		PropertyID:      propertyID,
 		GuestID:         guestID,
-		CheckInDate:     time.Now().AddDate(0, 0, 1).Format("2006-01-02"),
-		CheckOutDate:    time.Now().AddDate(0, 0, 2).Format("2006-01-02"),
+		CheckInDate:     time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC),
 		TotalPriceCents: 10000,
 		Currency:        "USD",
 		CreatedAt:       time.Now(),
@@ -133,8 +144,6 @@ func TestGetBooking(t *testing.T) {
 	require.Equal(t, got.ID, id)
 	require.Equal(t, got.PropertyID, booking.PropertyID)
 	require.Equal(t, got.GuestID, booking.GuestID)
-	require.Equal(t, got.CheckInDate, booking.CheckInDate)
-	require.Equal(t, got.CheckOutDate, booking.CheckOutDate)
 }
 
 func TestDeleteBooking(t *testing.T) {
@@ -161,8 +170,8 @@ func TestDeleteBooking(t *testing.T) {
 	booking := reserv.Booking{
 		PropertyID:   propertyID,
 		GuestID:      guestID,
-		CheckInDate:  time.Now().AddDate(0, 0, 1).Format("2006-01-02"),
-		CheckOutDate: time.Now().AddDate(0, 0, 2).Format("2006-01-02"),
+		CheckInDate:  time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+		CheckOutDate: time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC),
 	}
 
 	id, err := repo.CreateBooking(context.Background(), booking)

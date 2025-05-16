@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log/slog"
 
@@ -11,26 +10,27 @@ import (
 )
 
 // CreateBooking creates a new booking considering the existing bookings to avoid overlapping.
+// An important detail about this implementation is that the booking will never accept overlapping. So, if a property has booked 2025-01-01 to 2025-01-05
+// and another booking is requested for 2025-01-05 to 2025-01-10, the booking will be rejected. We are not considering hours of check in and check out.
 func (r *Repository) CreateBooking(ctx context.Context, newBooking reserv.Booking) (string, error) {
-
-	// get all curBookings between check in and check out date
-	var curBookings []reserv.Booking
 	query := `
-		SELECT * FROM bookings WHERE property_id = $1 AND check_in_date <= $2 AND check_out_date >= $3
+		SELECT EXISTS (
+			-- SELECT will return 1 if there is a booking that overlaps with the new booking
+			SELECT 1 FROM bookings WHERE property_id = $1 AND (
+				(check_in_date <= $2 AND check_out_date >= $2) OR
+				(check_in_date <= $3 AND check_out_date >= $3) OR
+				(check_in_date >= $2 AND check_out_date <= $3)
+			)
+		)
 	`
 
-	if err := r.db.SelectContext(ctx, &curBookings, query, newBooking.PropertyID, newBooking.CheckInDate, newBooking.CheckOutDate); err != nil {
-		slog.Error("failed to get bookings", "error", err)
-		return "", fmt.Errorf("failed to get bookings: %v", err)
+	var isBooked bool
+	if err := r.db.GetContext(ctx, &isBooked, query, newBooking.PropertyID, newBooking.CheckInDate, newBooking.CheckOutDate); err != nil {
+		return "", fmt.Errorf("failed to check if booking exists: %v", err)
 	}
 
-	// if there are any bookings that overlap with the new booking, then we can't create the booking
-	for _, curBooking := range curBookings {
-		// if the new booking is between the current booking it's overlapping. Then we can't create the booking
-		if curBooking.CheckInDate < newBooking.CheckOutDate && curBooking.CheckOutDate > newBooking.CheckInDate {
-			slog.Error("booking overlaps", "new_booking", newBooking, "cur_booking", curBooking)
-			return "", errors.New("booking overlaps")
-		}
+	if isBooked {
+		return "", fmt.Errorf("booking overlaps")
 	}
 
 	slog.Info("creating booking")
