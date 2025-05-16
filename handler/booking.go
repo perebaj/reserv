@@ -138,6 +138,7 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// DeleteBookingHandler is the handler for deleting a booking by id.
 func (h *Handler) DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if id == "" {
