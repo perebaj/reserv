@@ -87,3 +87,24 @@ func TestGetBookingHandler(t *testing.T) {
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 }
+
+func TestBookingsHandler(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBookingRepo := mock.NewMockBookingRepository(ctrl)
+	mockBookingRepo.EXPECT().Bookings(gomock.Any(), gomock.Any()).Return([]reserv.Booking{
+		{
+			ID: "123",
+		},
+	}, nil)
+
+	handler := NewHandler(nil, nil, mockBookingRepo)
+
+	req := httptest.NewRequest(http.MethodGet, "/bookings?property_id=123&guest_id=456", nil)
+
+	resp := httptest.NewRecorder()
+	mux := http.NewServeMux()
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+}
