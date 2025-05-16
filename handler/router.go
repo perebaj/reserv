@@ -68,8 +68,22 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	})
 
 	mux.HandleFunc("/bookings", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodPost:
 			h.CreateBookingHandler(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/bookings/{id}", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodDelete:
+			h.DeleteBookingHandler(w, r)
+		case http.MethodGet:
+			h.GetBookingHandler(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
 }
