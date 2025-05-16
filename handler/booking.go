@@ -46,6 +46,7 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_required_fields", "missing required fields", http.StatusBadRequest).Write(w)
 		return
 	}
+	slog.Info("create booking", "request", req)
 
 	checkInDate, err := time.Parse(dateFormat, req.CheckInDate)
 	if err != nil {
@@ -92,6 +93,7 @@ func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
 		return
 	}
+	slog.Info("get booking", "id", id)
 
 	affectedRows, booking, err := h.bookingRepo.GetBooking(r.Context(), id)
 	if err != nil {
@@ -118,6 +120,7 @@ func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 	propertyID := r.URL.Query().Get("property_id")
 	guestID := r.URL.Query().Get("guest_id")
+	slog.Info("bookings", "property_id", propertyID, "guest_id", guestID)
 
 	bookings, err := h.bookingRepo.Bookings(r.Context(), reserv.BookingFilter{
 		PropertyID: propertyID,
