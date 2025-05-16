@@ -40,7 +40,7 @@ func TestCreateProperty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	mux := http.NewServeMux()
-	propHandler := handler.NewHandler(repo, nil)
+	propHandler := handler.NewHandler(repo, nil, nil)
 	propHandler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -77,7 +77,7 @@ func TestUpdateProperty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -98,7 +98,7 @@ func TestDeleteProperty(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -119,7 +119,7 @@ func TestGetProperty(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -147,7 +147,7 @@ func TestGetProperty_NotFound(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -169,7 +169,7 @@ func TestGetAmenities(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -198,7 +198,7 @@ func TestCreatePropertyAmenity(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 
@@ -220,7 +220,7 @@ func TestGetProperties_WithHostIDFilter(t *testing.T) {
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
-	handler := handler.NewHandler(repo, nil)
+	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
 

@@ -78,7 +78,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	handler := handler.NewHandler(repo, cloudFlareClient)
+	// TODO(@perebaj): Duplicating the repo object to turn easy on testing. But this is not a ideal solution.
+	handler := handler.NewHandler(repo, cloudFlareClient, repo)
 
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
