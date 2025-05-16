@@ -7,12 +7,13 @@ import (
 // Handle is responsable to gather all important implementations to inject into the handler.
 // TODO(@perebaj): As we have a small number of handlers, we can keep them here.
 type Handler struct {
-	repo       PropertyRepository
-	CloudFlare CloudFlareAPI
+	repo        PropertyRepository
+	bookingRepo BookingRepository
+	CloudFlare  CloudFlareAPI
 }
 
-func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI) *Handler {
-	return &Handler{repo: repo, CloudFlare: cloudFlare}
+func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI, bookingRepo BookingRepository) *Handler {
+	return &Handler{repo: repo, CloudFlare: cloudFlare, bookingRepo: bookingRepo}
 }
 
 // RegisterRoutes registers all property routes
@@ -62,6 +63,12 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/amenities", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			h.GetAmenities(w, r)
+		}
+	})
+
+	mux.HandleFunc("/bookings", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			h.CreateBookingHandler(w, r)
 		}
 	})
 }
