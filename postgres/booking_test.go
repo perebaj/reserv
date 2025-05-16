@@ -185,3 +185,72 @@ func TestDeleteBooking(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, affected, 0)
 }
+
+func TestBookings(t *testing.T) {
+	db := OpenDB(t)
+	defer db.Close()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+	guestID := uuid.New().String()
+
+	property := reserv.Property{
+		HostID:             guestID,
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+
+	property2 := reserv.Property{
+		HostID:             guestID,
+		Title:              "Test Property 2",
+		Description:        "Test Description 2",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+	}
+
+	propertyID2, err := repo.CreateProperty(ctx, property2)
+	require.NoError(t, err)
+
+	booking := reserv.Booking{
+		PropertyID: propertyID,
+		GuestID:    guestID,
+	}
+
+	id, err := repo.CreateBooking(ctx, booking)
+	require.NoError(t, err)
+	require.NotEmpty(t, id)
+
+	booking2 := reserv.Booking{
+		PropertyID: propertyID2,
+		GuestID:    guestID,
+	}
+
+	id2, err := repo.CreateBooking(ctx, booking2)
+	require.NoError(t, err)
+	require.NotEmpty(t, id2)
+	bookings, err := repo.Bookings(ctx, reserv.BookingFilter{
+		PropertyID: propertyID,
+	})
+	require.NoError(t, err)
+	require.Equal(t, len(bookings), 1)
+	require.Equal(t, bookings[0].ID, id)
+	require.Equal(t, bookings[0].PropertyID, propertyID)
+	require.Equal(t, bookings[0].GuestID, guestID)
+
+	bookings, err = repo.Bookings(ctx, reserv.BookingFilter{
+		GuestID: guestID,
+	})
+	require.NoError(t, err)
+	require.Equal(t, len(bookings), 2)
+	for _, booking := range bookings {
+		require.Contains(t, []string{id, id2}, booking.ID)
+		require.Equal(t, booking.GuestID, guestID)
+	}
+}

@@ -13,16 +13,20 @@ import (
 )
 
 //go:generate mockgen -source images.go -destination ../mock/images.go -package mock
+
+// CloudFlareAPI is the interface for the CloudFlare API.
 type CloudFlareAPI interface {
 	UploadImage(ctx context.Context, container *cloudflare.ResourceContainer, params cloudflare.UploadImageParams) (cloudflare.Image, error)
 }
 
+// Image is the response body for getting an image.
 type Image struct {
-	Id       string   `json:"id"`
+	ID       string   `json:"id"`
 	FileName string   `json:"filename"`
 	Variants []string `json:"variants"`
 }
 
+// CreatePropertyImage is the request body for creating a property image.
 type CreatePropertyImage struct {
 	PropertyID string `json:"property_id"`
 	HostID     string `json:"host_id"`
@@ -70,7 +74,11 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 			NewAPIError("failed to get image from form", "failed to get image from form", http.StatusInternalServerError).Write(w)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				slog.Error("failed to close file", "error", err.Error())
+			}
+		}()
 		// TODO(@perebaj): Remove this variable from here. Just doing that because injecting the ACCOUNT_ID using the SDK is not working.
 		accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
 		if accountID == "" {

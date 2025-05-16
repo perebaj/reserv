@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-// Handle is responsable to gather all important implementations to inject into the handler.
+// Handler is responsable to gather all important implementations to inject into the handler.
 // TODO(@perebaj): As we have a small number of handlers, we can keep them here.
 type Handler struct {
 	repo        PropertyRepository
@@ -12,6 +12,7 @@ type Handler struct {
 	CloudFlare  CloudFlareAPI
 }
 
+// NewHandler creates a new handler
 func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI, bookingRepo BookingRepository) *Handler {
 	return &Handler{repo: repo, CloudFlare: cloudFlare, bookingRepo: bookingRepo}
 }

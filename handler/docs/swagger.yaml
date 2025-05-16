@@ -296,6 +296,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
     get:
+      parameters:
+        - name: property_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: guest_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
       tags:
         - Bookings
       summary: List all bookings

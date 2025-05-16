@@ -46,6 +46,7 @@ type Property struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+// PropertyImage represents an image for a property.
 type PropertyImage struct {
 	ID uuid.UUID `json:"id" db:"id"`
 	// HostID is the unique identifier for the host of the property. Required.
