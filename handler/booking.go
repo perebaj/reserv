@@ -87,7 +87,7 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetBookingHandler is the handler for getting a booking by id.
 func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+	id := r.PathValue("id")
 	if id == "" {
 		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
 		return
@@ -136,4 +136,22 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("failed_to_encode_response", "failed to encode response", http.StatusInternalServerError).Write(w)
 		return
 	}
+}
+
+// DeleteBookingHandler is the handler for deleting a booking by id.
+func (h *Handler) DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
+		return
+	}
+
+	err := h.bookingRepo.DeleteBooking(r.Context(), id)
+	if err != nil {
+		slog.Error("failed to delete booking", "error", err)
+		NewAPIError("failed_to_delete_booking", "failed to delete booking", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
