@@ -16,6 +16,75 @@ tags:
 
 components:
   schemas:
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        property_id:
+          type: string
+          format: uuid
+          example: "c5d2de3c-b880-4f47-a989-7a7b1e3c9e55"
+        guest_id:
+          type: string
+          example: "user_2KFLQkwP9GkJDJLUiShFi8RK2Vb"
+        check_in_date:
+          type: string
+          format: date
+          example: "2025-06-15"
+        check_out_date:
+          type: string
+          format: date
+          example: "2025-06-20"
+        total_price_cents:
+          type: number
+          format: integer
+          example: 52050
+        currency:
+          type: string
+          example: "BRL"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-05-15T14:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-05-15T14:30:00Z"
+
+    CreateBooking:
+      type: object
+      properties:
+        property_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the property
+        guest_id:
+          type: string
+          description: Unique identifier for the guest
+          example: "user_2KFLQkwP9GkJDJLUiShFi8RK2Vb"
+        check_in_date:
+          type: string
+          format: date
+          description: Check-in date
+        check_out_date:
+          type: string
+          format: date
+          description: Check-out date
+        total_price_cents:
+          type: number
+          format: integer
+        currency:
+          type: string
+          description: Currency code (e.g., USD, BRL)
+      required:
+        - property_id
+        - guest_id
+        - check_in_date
+        - check_out_date
+
     CreateProperty:
       type: object
       properties:
@@ -195,6 +264,117 @@ components:
         - status
 
 paths:
+  /bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Create a new booking
+      description: Creates a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBooking'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+    get:
+      tags:
+        - Bookings
+      summary: List all bookings
+      description: Returns a list of all bookings
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+  /bookings/{id}:
+    get:
+      tags:
+        - Bookings
+      summary: Get a booking by ID
+      description: Returns a booking by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+    delete:
+      tags:
+        - Bookings
+      summary: Delete a booking by ID
+      description: Deletes a booking by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Booking deleted successfully
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
   /properties:
     get:
       tags:
