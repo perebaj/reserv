@@ -11,10 +11,13 @@ import (
 )
 
 //go:generate mockgen -source booking.go -destination ../mock/booking.go -package mock
+
+// BookingRepository is the repository for the booking. Gathers all the methods to interact with the booking.
 type BookingRepository interface {
 	CreateBooking(ctx context.Context, booking reserv.Booking) (string, error)
 	DeleteBooking(ctx context.Context, id string) error
 	GetBooking(ctx context.Context, id string) (int, reserv.Booking, error)
+	Bookings(ctx context.Context, filter reserv.BookingFilter) ([]reserv.Booking, error)
 }
 
 // CreateBooking is the request body for creating a booking.
@@ -59,8 +62,8 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	booking := reserv.Booking{
-		PropertyID: req.PropertyID,
-		GuestID:    req.GuestID,
+		PropertyID:   req.PropertyID,
+		GuestID:      req.GuestID,
 		CheckInDate:  time.Date(checkInDate.Year(), checkInDate.Month(), checkInDate.Day(), 0, 0, 0, 0, time.UTC),
 		CheckOutDate: time.Date(checkOutDate.Year(), checkOutDate.Month(), checkOutDate.Day(), 0, 0, 0, 0, time.UTC),
 		// TODO(@perebaj): Add total price. and currency.
@@ -75,6 +78,59 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(map[string]string{"id": id})
+	if err != nil {
+		slog.Error("failed to encode response", "error", err)
+		NewAPIError("failed_to_encode_response", "failed to encode response", http.StatusInternalServerError).Write(w)
+		return
+	}
+}
+
+// GetBookingHandler is the handler for getting a booking by id.
+func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
+		return
+	}
+
+	affectedRows, booking, err := h.bookingRepo.GetBooking(r.Context(), id)
+	if err != nil {
+		slog.Error("failed to get booking", "error", err)
+		NewAPIError("failed_to_get_booking", "failed to get booking", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	if affectedRows == 0 {
+		NewAPIError("booking_not_found", "booking not found", http.StatusNotFound).Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(booking)
+	if err != nil {
+		slog.Error("failed to encode response", "error", err)
+		NewAPIError("failed_to_encode_response", "failed to encode response", http.StatusInternalServerError).Write(w)
+		return
+	}
+}
+
+// BookingsHandler is the handler for getting all bookings.
+func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
+	propertyID := r.URL.Query().Get("property_id")
+	guestID := r.URL.Query().Get("guest_id")
+
+	bookings, err := h.bookingRepo.Bookings(r.Context(), reserv.BookingFilter{
+		PropertyID: propertyID,
+		GuestID:    guestID,
+	})
+	if err != nil {
+		slog.Error("failed to get bookings", "error", err)
+		NewAPIError("failed_to_get_bookings", "failed to get bookings", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(bookings)
 	if err != nil {
 		slog.Error("failed to encode response", "error", err)
 		NewAPIError("failed_to_encode_response", "failed to encode response", http.StatusInternalServerError).Write(w)

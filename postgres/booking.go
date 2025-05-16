@@ -1,3 +1,4 @@
+// Package postgres contains all the database operations.
 package postgres
 
 import (
@@ -97,16 +98,40 @@ func (r *Repository) DeleteBooking(ctx context.Context, id string) error {
 	return nil
 }
 
-// GetBookings returns all bookings.
-func (r *Repository) GetBookings(ctx context.Context) ([]reserv.Booking, error) {
+// Bookings returns all bookings.
+func (r *Repository) Bookings(ctx context.Context, filter reserv.BookingFilter) ([]reserv.Booking, error) {
 	slog.Info("getting all bookings")
 	query := `
-		SELECT * FROM bookings ORDER BY created_at DESC
+		SELECT * FROM bookings
 	`
 
+	// To avoid passing arguments that wont be used, we will build the query and the arguments separately.
+	args := make(map[string]interface{}, 2)
+
+	if filter.PropertyID != "" {
+		query += " WHERE property_id = :property_id"
+		args["property_id"] = filter.PropertyID
+	}
+
+	if filter.GuestID != "" {
+		query += " WHERE guest_id = :guest_id"
+		args["guest_id"] = filter.GuestID
+	}
+
+	query += " ORDER BY created_at DESC"
+	slog.Info("final query for bookings", "query", query, "args", args)
 	var bookings []reserv.Booking
-	if err := r.db.SelectContext(ctx, &bookings, query); err != nil {
+	res, err := r.db.NamedQueryContext(ctx, query, args)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get bookings: %v", err)
+	}
+
+	for res.Next() {
+		var booking reserv.Booking
+		if err := res.StructScan(&booking); err != nil {
+			return nil, fmt.Errorf("failed to scan booking: %v", err)
+		}
+		bookings = append(bookings, booking)
 	}
 
 	return bookings, nil

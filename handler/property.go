@@ -1,4 +1,4 @@
-// Package handler. property.go contains the handler for the property resource and your sub-resources. Ex: amenities.
+// Package handler contains all the handlers for the application.
 package handler
 
 import (
@@ -12,6 +12,8 @@ import (
 )
 
 //go:generate mockgen -source property.go -destination ../mock/property.go -package mock
+
+// PropertyRepository is the repository for the property. Gathers all the methods to interact with the property.
 type PropertyRepository interface {
 	// Property methods
 	// CreateProperty creates a new property
@@ -209,6 +211,7 @@ func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostAmenity creates amenities for a property
 func (h *Handler) PostAmenity(w http.ResponseWriter, r *http.Request) {
 	propertyID := r.PathValue("id")
 	if propertyID == "" {
@@ -237,6 +240,7 @@ func (h *Handler) PostAmenity(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetAmenities gets all amenities
 func (h *Handler) GetAmenities(w http.ResponseWriter, r *http.Request) {
 	amenities, err := h.repo.Amenities(r.Context())
 	if err != nil {

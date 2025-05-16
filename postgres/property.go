@@ -11,10 +11,12 @@ import (
 	"github.com/perebaj/reserv"
 )
 
+// Repository is the repository for the property.
 type Repository struct {
 	db *sqlx.DB
 }
 
+// NewRepository creates a new repository.
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{db: db}
 }
@@ -48,7 +50,11 @@ func (r *Repository) GetPropertyAmenities(ctx context.Context, propertyID string
 	if err != nil {
 		return nil, fmt.Errorf("failed to get property amenities: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			slog.Error("failed to close rows", "error", err)
+		}
+	}()
 
 	var amenities []reserv.Amenity
 	for rows.Next() {
@@ -201,6 +207,7 @@ func (r *Repository) GetProperty(ctx context.Context, id string) (int, reserv.Pr
 	return 1, property, nil
 }
 
+// Properties returns all properties applying some filters that bring aggregated data.
 func (r *Repository) Properties(ctx context.Context, filter reserv.PropertyFilter) ([]reserv.Property, error) {
 	slog.Info("getting properties")
 

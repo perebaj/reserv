@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"io"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +22,7 @@ func TestHandler_handlerPostImage(t *testing.T) {
 
 	// @TODO(@perebaj): Its not cool to have a environment variable in the tests.
 	// Doing this because injecting the ACCOUNT_ID using the SDK is not working.
-	os.Setenv("CLOUDFLARE_ACCOUNT_ID", "123")
+	_ = os.Setenv("CLOUDFLARE_ACCOUNT_ID", "123")
 
 	cloudFlareMock := mock.NewMockCloudFlareAPI(ctrl)
 	cloudFlareMock.EXPECT().UploadImage(gomock.Any(), gomock.Any(), gomock.Any()).Return(cloudflare.Image{
@@ -49,7 +50,11 @@ func TestHandler_handlerPostImage(t *testing.T) {
 
 	f, err := os.Open("testdata/image.png")
 	require.NoError(t, err)
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("failed to close file", "error", err)
+		}
+	}()
 
 	_, err = io.Copy(part, f)
 	require.NoError(t, err)

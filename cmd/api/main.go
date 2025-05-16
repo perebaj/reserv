@@ -1,3 +1,4 @@
+// Package main ...
 package main
 
 import (
@@ -19,8 +20,8 @@ import (
 
 // Config gathers all the configuration for the application.
 type Config struct {
-	// POSTGRES_URL Represents the whole connection string for the database.
-	POSTGRES_URL string
+	// PostgresURL Represents the whole connection string for the database.
+	PostgresURL string
 	// LogLevel is the level of the logs. Avaiable values are: info, debug, error.
 	LogLevel string
 	// LogFormat is the format of the log. Available values are: json, logfmt, gcp
@@ -33,13 +34,13 @@ func main() {
 	cfg := Config{
 		// POSTGRES_URL Represents the whole connection string for the database.
 		// TODO(@perebaj): Remove this default value when we have a proper configuration.
-		POSTGRES_URL:     getEnvWithDefault("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
+		PostgresURL:      getEnvWithDefault("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/postgres"),
 		LogLevel:         getEnvWithDefault("LOG_LEVEL", "debug"),
 		LogFormat:        getEnvWithDefault("LOG_FORMAT", "json"),
 		CloudFlareAPIKey: getEnvWithDefault("CLOUDFLARE_API_KEY", ""),
 	}
 
-	if cfg.POSTGRES_URL == "" || cfg.CloudFlareAPIKey == "" {
+	if cfg.PostgresURL == "" || cfg.CloudFlareAPIKey == "" {
 		slog.Error("POSTGRES_URL or CLOUDFLARE_API_KEY is not set")
 		os.Exit(1)
 	}
@@ -57,7 +58,7 @@ func main() {
 	slog.SetDefault(logger)
 
 	db, err := postgres.OpenDB(postgres.Config{
-		URL: cfg.POSTGRES_URL,
+		URL: cfg.PostgresURL,
 	})
 	if err != nil {
 		slog.Error("failed to open db", "error", err)

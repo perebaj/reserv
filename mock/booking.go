@@ -40,6 +40,21 @@ func (m *MockBookingRepository) EXPECT() *MockBookingRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Bookings mocks base method.
+func (m *MockBookingRepository) Bookings(ctx context.Context, filter reserv.BookingFilter) ([]reserv.Booking, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Bookings", ctx, filter)
+	ret0, _ := ret[0].([]reserv.Booking)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Bookings indicates an expected call of Bookings.
+func (mr *MockBookingRepositoryMockRecorder) Bookings(ctx, filter any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Bookings", reflect.TypeOf((*MockBookingRepository)(nil).Bookings), ctx, filter)
+}
+
 // CreateBooking mocks base method.
 func (m *MockBookingRepository) CreateBooking(ctx context.Context, booking reserv.Booking) (string, error) {
 	m.ctrl.T.Helper()

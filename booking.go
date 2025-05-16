@@ -2,6 +2,14 @@ package reserv
 
 import "time"
 
+// BookingFilter is the filter for the bookings.
+type BookingFilter struct {
+	// PropertyID is the id of the property that the booking is for.
+	PropertyID string
+	// GuestID is the id of the guest(user) who made the booking.
+	GuestID string
+}
+
 // Booking is the entity that represents a booking of a property by a guest(user).
 type Booking struct {
 	ID         string `json:"id" db:"id"`
