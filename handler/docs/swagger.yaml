@@ -17,6 +17,12 @@ tags:
     description: API for managing images
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     Booking:
       type: object
@@ -649,6 +655,22 @@ paths:
                   $ref: '#/components/schemas/Amenity'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+
+  /protected:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Protected
+      summary: Protected route
+      description: Protected route
+      responses:
+        '200':
+          description: Successful operation
           content:
             application/json:
               schema:
