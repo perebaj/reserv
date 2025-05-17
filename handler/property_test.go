@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/handler"
@@ -217,6 +218,15 @@ func TestGetProperties_WithHostIDFilter(t *testing.T) {
 	}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/properties?host_id=user_2x5CiRO5Mf0wBpWO8w469jEJhRq", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
+
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -231,4 +241,22 @@ func TestGetProperties_WithHostIDFilter(t *testing.T) {
 	err := json.Unmarshal([]byte(rBody), &response)
 	require.NoError(t, err)
 	require.Equal(t, 2, len(response))
+
+	// invalid Subject compared with the hostID
+	req = httptest.NewRequest(http.MethodGet, "/properties?host_id=user_2x5CiRO5Mf0wBpWO8w469jEJhRq", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx = clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "wrong_user_id",
+		},
+	})
+	req = req.WithContext(ctx)
+
+	resp = httptest.NewRecorder()
+
+	mux.ServeHTTP(resp, req)
+
+	rBody = resp.Body.String()
+	require.Equal(t, http.StatusUnauthorized, resp.Code, rBody)
 }

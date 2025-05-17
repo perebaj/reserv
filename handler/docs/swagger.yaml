@@ -398,6 +398,8 @@ paths:
 
   /properties:
     get:
+      security:
+        - bearerAuth: []
       tags:
         - Properties
       summary: List all properties

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/perebaj/reserv"
 )
 
@@ -197,6 +198,24 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 // GetProperties gets all properties
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 	hostID := r.URL.Query().Get("host_id")
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+
+	// If the hostID is provided, we need to validate the token
+	if !ok && hostID != "" {
+		slog.Error("failed to get claims")
+		NewAPIError("get_claims_error", "failed to get claims", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	// If the hostID is provided, we need to validate the token
+	if claims != nil && hostID != "" {
+		if claims.Subject != hostID {
+			slog.Warn("unauthorized, different user from hostID and jwt", "host_id", hostID, "jwt_subject", claims.Subject)
+			NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+			return
+		}
+	}
+
 	properties, err := h.repo.Properties(r.Context(), reserv.PropertyFilter{HostID: hostID})
 	if err != nil {
 		slog.Error("failed to get properties", "error", err)
