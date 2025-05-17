@@ -146,7 +146,7 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if claims != nil && claims.Subject != guestID {
+	if claims != nil && guestID != "" && claims.Subject != guestID {
 		slog.Warn("unauthorized, different user from guestID and jwt", "guest_id", guestID, "jwt_subject", claims.Subject)
 		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
 		return
