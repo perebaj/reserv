@@ -23,7 +23,7 @@ func NewHandler(repo PropertyRepository, cloudFlare CloudFlareAPI, bookingRepo B
 
 // RegisterRoutes registers all property routes
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("/properties", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/properties", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			h.GetProperties(w, r)
@@ -35,7 +35,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
 	mux.HandleFunc("/properties/{id}", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
