@@ -64,6 +64,7 @@ func TestCreateBooking(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, id2)
 
+	//Creating a booking that overlaps with the second booking
 	want3 := reserv.Booking{
 		PropertyID:      propertyID,
 		GuestID:         guestID,
@@ -79,27 +80,41 @@ func TestCreateBooking(t *testing.T) {
 	require.Error(t, err, "booking overlaps")
 	require.Empty(t, id3)
 
+	//Creating a booking that have 1 day more than the second booking
+	//This should be accepted because the booking is not overlapping
 	want4 := reserv.Booking{
+		PropertyID:   propertyID,
+		GuestID:      guestID,
+		CheckInDate:  time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC),
+		CheckOutDate: time.Date(2025, 1, 16, 0, 0, 0, 0, time.UTC),
+	}
+
+	id44, err := repo.CreateBooking(context.Background(), want4)
+	require.NoError(t, err)
+	require.NotEmpty(t, id44)
+
+	want5 := reserv.Booking{
 		PropertyID:   propertyID,
 		GuestID:      guestID,
 		CheckInDate:  time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
 		CheckOutDate: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	id4, err := repo.CreateBooking(context.Background(), want4)
+	id4, err := repo.CreateBooking(context.Background(), want5)
 	require.Error(t, err, "booking overlaps")
 	require.Empty(t, id4)
 
-	want5 := reserv.Booking{
+	want6 := reserv.Booking{
 		PropertyID:   propertyID,
 		GuestID:      guestID,
 		CheckInDate:  time.Date(2024, 12, 25, 0, 0, 0, 0, time.UTC),
 		CheckOutDate: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC),
 	}
 
-	id5, err := repo.CreateBooking(context.Background(), want5)
+	id5, err := repo.CreateBooking(context.Background(), want6)
 	require.NoError(t, err)
 	require.NotEmpty(t, id5)
+
 }
 
 func TestGetBooking(t *testing.T) {

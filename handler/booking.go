@@ -148,6 +148,7 @@ func (h *Handler) DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
 		return
 	}
+	slog.Info("delete booking", "id", id)
 
 	err := h.bookingRepo.DeleteBooking(r.Context(), id)
 	if err != nil {
