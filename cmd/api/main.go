@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/handler"
@@ -28,6 +29,8 @@ type Config struct {
 	LogFormat string
 	// CloudFlareAPIKey is the API key for the Cloudflare API.
 	CloudFlareAPIKey string
+	// ClerkAPIKey is the private key for the Clerk API.
+	ClerkAPIKey string
 }
 
 func main() {
@@ -38,12 +41,16 @@ func main() {
 		LogLevel:         getEnvWithDefault("LOG_LEVEL", "debug"),
 		LogFormat:        getEnvWithDefault("LOG_FORMAT", "json"),
 		CloudFlareAPIKey: getEnvWithDefault("CLOUDFLARE_API_KEY", ""),
+		// ClerkAPIKey is the private key for the Clerk API.
+		ClerkAPIKey: getEnvWithDefault("CLERK_API_KEY", ""),
 	}
 
-	if cfg.PostgresURL == "" || cfg.CloudFlareAPIKey == "" {
-		slog.Error("POSTGRES_URL or CLOUDFLARE_API_KEY is not set")
+	if cfg.PostgresURL == "" || cfg.CloudFlareAPIKey == "" || cfg.ClerkAPIKey == "" {
+		slog.Error("POSTGRES_URL or CLOUDFLARE_API_KEY or CLERK_API_KEY is not set")
 		os.Exit(1)
 	}
+	clerk.SetKey(cfg.ClerkAPIKey)
+
 	logger, err := reserv.NewLoggerSlog(
 		reserv.ConfigSlog{
 			Level:  cfg.LogLevel,

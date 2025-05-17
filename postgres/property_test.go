@@ -305,6 +305,21 @@ func TestDeleteProperty(t *testing.T) {
 		CreatedAt:    time.Now(),
 	}
 
+	booking := reserv.Booking{
+		PropertyID:      propertyID,
+		GuestID:         "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		CheckInDate:     time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC),
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		Currency:        "USD",
+		TotalPriceCents: 10000,
+	}
+
+	bookingID, err := repo.CreateBooking(ctx, booking)
+	require.NoError(t, err)
+	require.NotEmpty(t, bookingID)
+
 	_, err = repo.CreateImage(ctx, image)
 	require.NoError(t, err)
 
@@ -320,6 +335,10 @@ func TestDeleteProperty(t *testing.T) {
 	gotAmenities, err := repo.GetPropertyAmenities(ctx, propertyID)
 	require.NoError(t, err)
 	require.Len(t, gotAmenities, 0)
+
+	affected, _, err = repo.GetBooking(ctx, bookingID)
+	require.NoError(t, err)
+	require.Equal(t, 0, affected)
 }
 
 func TestProperties(t *testing.T) {

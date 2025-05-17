@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
+
+	"github.com/clerk/clerk-sdk-go/v2"
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 )
 
 // Handler is responsable to gather all important implementations to inject into the handler.
@@ -88,4 +92,19 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+
+	mux.Handle("/protected", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(protectedHandler)))
+}
+
+func protectedHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("protected route")
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	slog.Info("protected route", "claims", claims)
+	slog.Info("protected route", "userID", claims.Subject)
+	w.WriteHeader(http.StatusOK)
 }
