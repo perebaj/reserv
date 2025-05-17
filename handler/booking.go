@@ -30,12 +30,23 @@ type CreateBooking struct {
 	// Format: 2025-01-01T00:00:00Z
 	CheckInDate  string `json:"check_in_date"`
 	CheckOutDate string `json:"check_out_date"`
+	// TotalPriceCents is the total price of the booking in cents.
+	TotalPriceCents int `json:"total_price_cents"`
+	// Currency is the currency of the booking.
+	Currency string `json:"currency"`
 }
 
 const dateFormat = "2006-01-02" // This is Go's way of specifying YYYY-MM-DD
 
 // CreateBookingHandler is the handler for creating a booking.
 func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	var req CreateBooking
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		slog.Warn("failed to decode request body", "error", err)
@@ -48,6 +59,12 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	slog.Info("create booking", "request", req)
+
+	if claims != nil && claims.Subject != req.GuestID {
+		slog.Warn("unauthorized, different user from guestID and jwt", "guest_id", req.GuestID, "jwt_subject", claims.Subject)
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
 
 	checkInDate, err := time.Parse(dateFormat, req.CheckInDate)
 	if err != nil {
@@ -64,11 +81,12 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	booking := reserv.Booking{
-		PropertyID:   req.PropertyID,
-		GuestID:      req.GuestID,
-		CheckInDate:  time.Date(checkInDate.Year(), checkInDate.Month(), checkInDate.Day(), 0, 0, 0, 0, time.UTC),
-		CheckOutDate: time.Date(checkOutDate.Year(), checkOutDate.Month(), checkOutDate.Day(), 0, 0, 0, 0, time.UTC),
-		// TODO(@perebaj): Add total price. and currency.
+		PropertyID:      req.PropertyID,
+		GuestID:         req.GuestID,
+		CheckInDate:     time.Date(checkInDate.Year(), checkInDate.Month(), checkInDate.Day(), 0, 0, 0, 0, time.UTC),
+		CheckOutDate:    time.Date(checkOutDate.Year(), checkOutDate.Month(), checkOutDate.Day(), 0, 0, 0, 0, time.UTC),
+		TotalPriceCents: req.TotalPriceCents,
+		Currency:        req.Currency,
 	}
 
 	id, err := h.bookingRepo.CreateBooking(r.Context(), booking)
