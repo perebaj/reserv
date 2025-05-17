@@ -202,8 +202,8 @@ func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 
 	// If the hostID is provided, we need to validate the token
 	if !ok && hostID != "" {
-		slog.Error("failed to get claims")
-		NewAPIError("get_claims_error", "failed to get claims", http.StatusInternalServerError).Write(w)
+		slog.Warn("unauthorized, no claims and hostID provided")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
 		return
 	}
 
