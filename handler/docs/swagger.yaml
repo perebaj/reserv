@@ -7,6 +7,8 @@ info:
 servers:
   - url: https://reserv-production.up.railway.app/
     description: Reserv production server
+  - url: https://reserv-staging.up.railway.app/
+    description: Reserv staging server
 
 tags:
   - name: Properties
