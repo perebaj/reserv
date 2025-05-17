@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/perebaj/reserv"
 )
 
@@ -103,7 +104,6 @@ func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if affectedRows == 0 {
-		NewAPIError("booking_not_found", "booking not found", http.StatusNotFound).Write(w)
 		return
 	}
 
@@ -121,6 +121,18 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 	propertyID := r.URL.Query().Get("property_id")
 	guestID := r.URL.Query().Get("guest_id")
 	slog.Info("bookings", "property_id", propertyID, "guest_id", guestID)
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
+	if claims != nil && claims.Subject != guestID {
+		slog.Warn("unauthorized, different user from guestID and jwt", "guest_id", guestID, "jwt_subject", claims.Subject)
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
 
 	bookings, err := h.bookingRepo.Bookings(r.Context(), reserv.BookingFilter{
 		PropertyID: propertyID,
@@ -129,6 +141,17 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("failed to get bookings", "error", err)
 		NewAPIError("failed_to_get_bookings", "failed to get bookings", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	if len(bookings) == 0 {
+		w.WriteHeader(http.StatusOK)
+		err = json.NewEncoder(w).Encode([]reserv.Booking{})
+		if err != nil {
+			slog.Error("failed to encode response", "error", err)
+			NewAPIError("failed_to_encode_response", "failed to encode response", http.StatusInternalServerError).Write(w)
+			return
+		}
 		return
 	}
 
