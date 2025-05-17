@@ -123,6 +123,7 @@ func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("invalid_request_body", "invalid request body", http.StatusBadRequest).Write(w)
 		return
 	}
+	slog.Info("update property", "request", req, "property_id", propertyID)
 
 	// Validate required fields
 	if req.Title == "" || req.Description == "" || req.PricePerNightCents == 0 || req.Currency == "" {
@@ -154,6 +155,7 @@ func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
+	slog.Info("delete property", "property_id", propertyID)
 
 	if err := h.repo.DeleteProperty(r.Context(), propertyID); err != nil {
 		slog.Error("failed to delete property", "error", err)
@@ -171,7 +173,7 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
-
+	slog.Info("get property", "property_id", propertyID)
 	affected, property, err := h.repo.GetProperty(r.Context(), propertyID)
 	if err != nil {
 		slog.Error("failed to get property", "error", err)
@@ -201,6 +203,7 @@ func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("get_properties_error", "failed to get properties", http.StatusInternalServerError).Write(w)
 		return
 	}
+	slog.Info("get properties", "host_id", hostID)
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(properties)
@@ -218,7 +221,7 @@ func (h *Handler) PostAmenity(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
-
+	slog.Info("post amenity", "property_id", propertyID)
 	var amenties []string
 	if err := json.NewDecoder(r.Body).Decode(&amenties); err != nil {
 		slog.Error("failed to decode request body", "error", err)
@@ -248,7 +251,7 @@ func (h *Handler) GetAmenities(w http.ResponseWriter, r *http.Request) {
 		NewAPIError("get_amenities_error", "failed to get amenities", http.StatusInternalServerError).Write(w)
 		return
 	}
-
+	slog.Info("get amenities")
 	w.Header().Set("Content-Type", "application/json")
 
 	amenitiesBytes, err := json.Marshal(amenities)
