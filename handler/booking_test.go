@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/perebaj/reserv"
 	"github.com/perebaj/reserv/mock"
 	"github.com/stretchr/testify/require"
@@ -34,7 +35,14 @@ func TestCreateBookingHandler(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/bookings", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer test_token")
 
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "456",
+		},
+	})
+	req = req.WithContext(ctx)
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
 
@@ -102,9 +110,37 @@ func TestBookingsHandler(t *testing.T) {
 	handler := NewHandler(nil, nil, mockBookingRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/bookings?property_id=123&guest_id=456", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "456",
+		},
+	})
+	req = req.WithContext(ctx)
 
 	resp := httptest.NewRecorder()
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
 	mux.ServeHTTP(resp, req)
+
+	// empty guestID
+	mockBookingRepo.EXPECT().Bookings(gomock.Any(), gomock.Any()).Return([]reserv.Booking{
+		{
+			ID: "123",
+		},
+	}, nil)
+	req = httptest.NewRequest(http.MethodGet, "/bookings?property_id=123", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx = clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "456",
+		},
+	})
+	req = req.WithContext(ctx)
+	resp = httptest.NewRecorder()
+	mux.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusOK, resp.Code)
 }

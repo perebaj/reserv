@@ -274,6 +274,8 @@ components:
 paths:
   /bookings:
     post:
+      security:
+        - bearerAuth: []
       tags:
         - Bookings
       summary: Create a new booking
