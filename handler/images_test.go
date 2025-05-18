@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/perebaj/reserv/mock"
 	"github.com/stretchr/testify/require"
@@ -66,6 +67,14 @@ func TestHandler_handlerPostImage(t *testing.T) {
 	resp := httptest.NewRecorder()
 	req.Header.Set("accept", "*/*")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
