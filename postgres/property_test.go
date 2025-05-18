@@ -539,3 +539,50 @@ func TestCreateImage(t *testing.T) {
 	require.NotNil(t, createdImage.CreatedAt)
 	require.NotZero(t, createdImage.CreatedAt)
 }
+
+func TestDeleteImage(t *testing.T) {
+	db := OpenDB(t)
+	defer func() {
+		_ = db.Close()
+	}()
+
+	repo := postgres.NewRepository(db)
+	ctx := context.Background()
+
+	property := reserv.Property{
+		Title:              "Test Property",
+		Description:        "Test Description",
+		PricePerNightCents: 10000,
+		Currency:           "USD",
+		HostID:             "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+	}
+
+	propertyID, err := repo.CreateProperty(ctx, property)
+	require.NoError(t, err)
+
+	image := reserv.PropertyImage{
+		PropertyID:   uuid.MustParse(propertyID),
+		HostID:       "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		CloudflareID: uuid.MustParse("2e195545-8278-41a8-9d01-3c423ec71263"),
+		Filename:     "test.jpg",
+		CreatedAt:    time.Now(),
+	}
+
+	imageID, err := repo.CreateImage(ctx, image)
+	require.NoError(t, err)
+
+	affected, err := repo.DeleteImage(ctx, imageID)
+	require.NoError(t, err)
+	require.Equal(t, int64(1), affected)
+
+	var deletedImage reserv.PropertyImage
+	db.GetContext(ctx, &deletedImage, "SELECT * FROM property_images WHERE id = $1", imageID)
+	require.NoError(t, err)
+	require.Empty(t, deletedImage)
+
+	// delete a non-existent image
+	randUUID := uuid.New()
+	affected, err = repo.DeleteImage(ctx, randUUID.String())
+	require.Error(t, err)
+	require.Equal(t, int64(0), affected)
+}

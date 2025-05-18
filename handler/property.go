@@ -36,6 +36,8 @@ type PropertyRepository interface {
 	// Images methods
 	// CreateImage creates an image for a property
 	CreateImage(ctx context.Context, image reserv.PropertyImage) (string, error)
+	// DeleteImage deletes an image for a property
+	DeleteImage(ctx context.Context, imageID string) (int64, error)
 
 	// Amenities methods
 	Amenities(ctx context.Context) ([]reserv.Amenity, error)

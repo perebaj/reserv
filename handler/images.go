@@ -129,3 +129,35 @@ func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (h *Handler) handlerDeleteImage(w http.ResponseWriter, r *http.Request) {
+	slog.Info("handleDeleteImage")
+
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
+	imageID := r.PathValue("id")
+	if imageID == "" {
+		slog.Error("image_id is required")
+		NewAPIError("image_id is required", "image_id is required", http.StatusBadRequest).Write(w)
+		return
+	}
+
+	affected, err := h.repo.DeleteImage(r.Context(), imageID)
+	if affected == 0 && err != nil {
+		NewAPIError("image not found", "image not found", http.StatusNotFound).Write(w)
+		return
+	}
+
+	if err != nil {
+		slog.Error("failed to delete image", "error", err.Error())
+		NewAPIError("failed to delete image", "failed to delete image", http.StatusInternalServerError).Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

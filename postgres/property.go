@@ -321,3 +321,27 @@ func (r *Repository) CreateImage(ctx context.Context, image reserv.PropertyImage
 
 	return id, nil
 }
+
+// DeleteImage deletes an image by its ID.
+func (r *Repository) DeleteImage(ctx context.Context, imageID string) (affected int64, err error) {
+	slog.Info("deleting image", "image_id", imageID)
+	query := `
+		DELETE FROM property_images WHERE id = $1
+	`
+
+	resp, err := r.db.ExecContext(ctx, query, imageID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete image: %v", err)
+	}
+
+	rows, err := resp.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get rows affected: %v", err)
+	}
+
+	if rows == 0 {
+		return 0, fmt.Errorf("image not found")
+	}
+
+	return rows, nil
+}
