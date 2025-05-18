@@ -306,6 +306,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
     get:
+      security:
+        - bearerAuth: []
       parameters:
         - name: property_id
           in: query
@@ -340,6 +342,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
   /bookings/{id}:
     get:
+      security:
+        - bearerAuth: []
       tags:
         - Bookings
       summary: Get a booking by ID
@@ -371,6 +375,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
     delete:
+      security:
+        - bearerAuth: []
       tags:
         - Bookings
       summary: Delete a booking by ID
@@ -430,6 +436,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     post:
+      security:
+        - bearerAuth: []
       tags:
         - Properties
       summary: Create a new property
@@ -465,6 +473,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
   /properties/{id}/amenities:
     post:
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -511,6 +521,8 @@ paths:
         description: Property ID
 
     get:
+      security:
+        - bearerAuth: []
       tags:
         - Properties
       summary: Get property by ID
@@ -536,6 +548,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     put:
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -576,6 +590,8 @@ paths:
                 $ref: '#/components/schemas/APIError'
 
     delete:
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -605,6 +621,8 @@ paths:
 
   /images:
     post:
+      security:
+        - bearerAuth: []
       tags:
         - Images
       summary: Upload an image and associate it with a property and a host

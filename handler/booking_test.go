@@ -68,6 +68,14 @@ func TestDeleteBookingHandler(t *testing.T) {
 	handler := NewHandler(nil, nil, mockBookingRepo)
 
 	req := httptest.NewRequest(http.MethodDelete, "/bookings/123", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "456",
+		},
+	})
+	req = req.WithContext(ctx)
 
 	resp := httptest.NewRecorder()
 	mux := http.NewServeMux()
@@ -89,7 +97,14 @@ func TestGetBookingHandler(t *testing.T) {
 	handler := NewHandler(nil, nil, mockBookingRepo)
 
 	req := httptest.NewRequest(http.MethodGet, "/bookings/123", nil)
+	req.Header.Set("Authorization", "Bearer test_token")
 
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "456",
+		},
+	})
+	req = req.WithContext(ctx)
 	resp := httptest.NewRecorder()
 	mux := http.NewServeMux()
 	handler.RegisterRoutes(mux)
