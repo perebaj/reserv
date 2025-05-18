@@ -56,7 +56,7 @@ Warning: `make docker-stop` is required to stop the containers after the tests a
 
 # Demo
 
-Youtube Link: https://www.youtube.com/watch?v=M0b8KASWYMA
+Youtube Link: https://youtu.be/2EygNvqWu-w
 
 # How I use AI in the development process
 
