@@ -99,6 +99,21 @@ func (mr *MockPropertyRepositoryMockRecorder) CreatePropertyAmenities(ctx, prope
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePropertyAmenities", reflect.TypeOf((*MockPropertyRepository)(nil).CreatePropertyAmenities), ctx, propertyID, amenities)
 }
 
+// DeleteImage mocks base method.
+func (m *MockPropertyRepository) DeleteImage(ctx context.Context, imageID string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteImage", ctx, imageID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteImage indicates an expected call of DeleteImage.
+func (mr *MockPropertyRepositoryMockRecorder) DeleteImage(ctx, imageID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteImage", reflect.TypeOf((*MockPropertyRepository)(nil).DeleteImage), ctx, imageID)
+}
+
 // DeleteProperty mocks base method.
 func (m *MockPropertyRepository) DeleteProperty(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()

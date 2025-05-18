@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log/slog"
 	"mime/multipart"
@@ -84,4 +85,46 @@ func TestHandler_handlerPostImage(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, http.StatusCreated, resp.Code, string(bodyBytes))
+}
+
+func TestHandler_handlerDeleteImage(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repoMock := mock.NewMockPropertyRepository(ctrl)
+	repoMock.EXPECT().DeleteImage(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+	handler := &Handler{
+		repo: repoMock,
+	}
+
+	req := httptest.NewRequest(http.MethodDelete, "/images/123", nil)
+	resp := httptest.NewRecorder()
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
+
+	mux := http.NewServeMux()
+	handler.RegisterRoutes(mux)
+	mux.ServeHTTP(resp, req)
+
+	require.Equal(t, http.StatusNoContent, resp.Code)
+
+	// Test when the image is not found
+	repoMock.EXPECT().DeleteImage(gomock.Any(), gomock.Any()).Return(int64(0), fmt.Errorf("image not found"))
+	req = httptest.NewRequest(http.MethodDelete, "/images/123", nil)
+	resp = httptest.NewRecorder()
+	req.Header.Set("Authorization", "Bearer test_token")
+	ctx = clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
+	mux.ServeHTTP(resp, req)
+	require.Equal(t, http.StatusNotFound, resp.Code)
 }

@@ -62,6 +62,13 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		}
 	})))
 
+	mux.Handle("/images/{id}", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodDelete:
+			h.handlerDeleteImage(w, r)
+		}
+	})))
+
 	mux.Handle("/properties/{id}/amenities", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:

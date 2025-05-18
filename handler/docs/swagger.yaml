@@ -619,6 +619,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/APIError'
 
+  /images/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Images
+      summary: Delete an image
+      description: Deletes an image by its ID
+      responses:
+        '200':
+          description: Image deleted successfully
+        '404':
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIError'
   /images:
     post:
       security:
