@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/google/uuid"
 	"github.com/perebaj/reserv"
@@ -34,6 +35,13 @@ type CreatePropertyImage struct {
 
 func (h *Handler) handlerPostImage(w http.ResponseWriter, r *http.Request) {
 	slog.Info("handlePostImage")
+
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
 
 	err := r.ParseMultipartForm(32 << 20) // 32MB is the maximum size of a file we can upload
 	if err != nil {

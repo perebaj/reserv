@@ -39,7 +39,14 @@ func TestCreateProperty(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/properties", bytes.NewBuffer(jsonBody))
 	resp := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer test_token")
 
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 	mux := http.NewServeMux()
 	propHandler := handler.NewHandler(repo, nil, nil)
 	propHandler.RegisterRoutes(mux)
@@ -76,7 +83,14 @@ func TestUpdateProperty(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPut, "/properties/"+propertyID, bytes.NewBuffer(jsonBody))
 	resp := httptest.NewRecorder()
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer test_token")
 
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 	mux := http.NewServeMux()
 	handler := handler.NewHandler(repo, nil, nil)
 	handler.RegisterRoutes(mux)
@@ -96,6 +110,14 @@ func TestDeleteProperty(t *testing.T) {
 	repo.EXPECT().DeleteProperty(gomock.Any(), gomock.Any()).Return(nil)
 
 	req := httptest.NewRequest(http.MethodDelete, "/properties/"+propertyID, nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -117,6 +139,14 @@ func TestGetProperty(t *testing.T) {
 	repo.EXPECT().GetProperty(gomock.Any(), gomock.Any()).Return(1, reserv.Property{ID: propertyID, Title: "Test Property", Description: "Test Description", PricePerNightCents: 10000, Currency: "USD"}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/properties/"+propertyID.String(), nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -145,6 +175,14 @@ func TestGetProperty_NotFound(t *testing.T) {
 	repo.EXPECT().GetProperty(gomock.Any(), gomock.Any()).Return(0, reserv.Property{}, nil)
 	propertyID := uuid.New().String()
 	req := httptest.NewRequest(http.MethodGet, "/properties/"+propertyID, nil)
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()
@@ -196,6 +234,16 @@ func TestCreatePropertyAmenity(t *testing.T) {
 
 	propertyID := uuid.New().String()
 	req := httptest.NewRequest(http.MethodPost, "/properties/"+propertyID+"/amenities", bytes.NewBuffer([]byte(`["1", "2"]`)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer test_token")
+
+	ctx := clerk.ContextWithSessionClaims(req.Context(), &clerk.SessionClaims{
+		RegisteredClaims: clerk.RegisteredClaims{
+			Subject: "user_2x5CiRO5Mf0wBpWO8w469jEJhRq",
+		},
+	})
+	req = req.WithContext(ctx)
+
 	resp := httptest.NewRecorder()
 
 	mux := http.NewServeMux()

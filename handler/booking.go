@@ -107,6 +107,14 @@ func (h *Handler) CreateBookingHandler(w http.ResponseWriter, r *http.Request) {
 
 // GetBookingHandler is the handler for getting a booking by id.
 func (h *Handler) GetBookingHandler(w http.ResponseWriter, r *http.Request) {
+	slog.Info("get booking")
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	id := r.PathValue("id")
 	if id == "" {
 		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
@@ -184,6 +192,13 @@ func (h *Handler) BookingsHandler(w http.ResponseWriter, r *http.Request) {
 
 // DeleteBookingHandler is the handler for deleting a booking by id.
 func (h *Handler) DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	id := r.PathValue("id")
 	if id == "" {
 		NewAPIError("missing_id", "missing id", http.StatusBadRequest).Write(w)
