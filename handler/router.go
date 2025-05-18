@@ -37,7 +37,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		}
 	})))
 
-	mux.HandleFunc("/properties/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/properties/{id}", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			h.GetProperty(w, r)
@@ -51,19 +51,25 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
-	mux.HandleFunc("/images", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+	mux.Handle("/images", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
 			h.handlerPostImage(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
-	mux.HandleFunc("/properties/{id}/amenities", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
+	mux.Handle("/properties/{id}/amenities", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
 			h.PostAmenity(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
 	mux.HandleFunc("/amenities", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -82,7 +88,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		}
 	})))
 
-	mux.HandleFunc("/bookings/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/bookings/{id}", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodDelete:
 			h.DeleteBookingHandler(w, r)
@@ -91,7 +97,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	})
+	})))
 
 	mux.Handle("/protected", clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(protectedHandler)))
 }

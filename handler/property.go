@@ -53,6 +53,7 @@ type CreatePropertyRequest struct {
 
 // CreateProperty creates a new property
 func (h *Handler) CreateProperty(w http.ResponseWriter, r *http.Request) {
+	slog.Info("create property")
 	var req CreatePropertyRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		slog.Error("failed to decode request body", "error", err)
@@ -60,9 +61,23 @@ func (h *Handler) CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("create property", "request", req)
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	if req.Title == "" || req.Description == "" || req.PricePerNightCents == 0 || req.Currency == "" || req.HostID == "" {
 		slog.Error("missing required fields", "request", req)
 		NewAPIError("missing_required_fields", "missing required fields", http.StatusBadRequest).Write(w)
+		return
+	}
+
+	if claims.Subject != req.HostID {
+		slog.Warn("unauthorized, different user from hostID and jwt", "host_id", req.HostID, "jwt_subject", claims.Subject)
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
 		return
 	}
 
@@ -112,6 +127,14 @@ type UpdatePropertyRequest struct {
 
 // UpdateProperty updates an existing property
 func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
+	slog.Info("update property")
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	propertyID := r.PathValue("id")
 	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
@@ -151,6 +174,13 @@ func (h *Handler) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 
 // DeleteProperty deletes a property
 func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
+	slog.Info("delete property")
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
 	propertyID := r.PathValue("id")
 	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
@@ -169,6 +199,13 @@ func (h *Handler) DeleteProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperty gets a property by id
 func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
+	slog.Info("get property")
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
 	propertyID := r.PathValue("id")
 	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
@@ -197,8 +234,15 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperties gets all properties
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
-	hostID := r.URL.Query().Get("host_id")
+	slog.Info("get properties")
 	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
+	hostID := r.URL.Query().Get("host_id")
 
 	// If the hostID is provided, we need to validate the token
 	if !ok && hostID != "" {
@@ -235,12 +279,20 @@ func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 
 // PostAmenity creates amenities for a property
 func (h *Handler) PostAmenity(w http.ResponseWriter, r *http.Request) {
+	slog.Info("post amenity for property")
+	_, ok := clerk.SessionClaimsFromContext(r.Context())
+	if !ok {
+		slog.Warn("unauthorized, no claims")
+		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
+		return
+	}
+
 	propertyID := r.PathValue("id")
 	if propertyID == "" {
 		NewAPIError("missing_property_id", "missing property id", http.StatusBadRequest).Write(w)
 		return
 	}
-	slog.Info("post amenity", "property_id", propertyID)
+	slog.Info("post amenity for property", "property_id", propertyID)
 	var amenties []string
 	if err := json.NewDecoder(r.Body).Decode(&amenties); err != nil {
 		slog.Error("failed to decode request body", "error", err)
