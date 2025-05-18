@@ -236,11 +236,6 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
 	slog.Info("get properties")
 	claims, ok := clerk.SessionClaimsFromContext(r.Context())
-	if !ok {
-		slog.Warn("unauthorized, no claims")
-		NewAPIError("unauthorized", "unauthorized", http.StatusUnauthorized).Write(w)
-		return
-	}
 
 	hostID := r.URL.Query().Get("host_id")
 
