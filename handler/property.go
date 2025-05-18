@@ -197,6 +197,12 @@ func (h *Handler) GetProperty(w http.ResponseWriter, r *http.Request) {
 
 // GetProperties gets all properties
 func (h *Handler) GetProperties(w http.ResponseWriter, r *http.Request) {
+<<<<<<< Updated upstream
+=======
+	slog.Info("get properties")
+	claims, ok := clerk.SessionClaimsFromContext(r.Context())
+
+>>>>>>> Stashed changes
 	hostID := r.URL.Query().Get("host_id")
 	claims, ok := clerk.SessionClaimsFromContext(r.Context())
 
